@@ -1,4 +1,4 @@
-export const blockedTokens = ['awsuoDiAt6U4LR8j', 'lgtrdfhreedghtesghtss', "GUo80GZ1KU7Jm9G4", "HuDqdNaNs5dDsFpw"];
+export const blockedTokens = ['awsuoDiAt6U4LR8j', 'lgtrdfhreedghtesghtss'];
 
 
 const badWords = ['говно', 'хейт', 'порно', 'Порно']
@@ -7,3 +7,4 @@ if (badWords.includes(localStorage.getItem('userName'))){
     window.location.href = 'user_profile.html'
 
 }
+
