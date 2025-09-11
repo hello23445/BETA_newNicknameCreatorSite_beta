@@ -1306,6 +1306,41 @@
                 sideButtons.appendChild(btn);
             });
         }
+        
+        async function checkTokenAndRedirect() {
+            try {
+                // Получаем токен из localStorage
+                const userToken = localStorage.getItem('userToken');
+                
+                if (!userToken) {
+                    console.error('Токен пользователя не найден в localStorage');
+                    return;
+                }
+                
+                // URL вашего развернутого веб-приложения GAS
+                const gasUrl = 'https://script.google.com/macros/s/AKfycbxkvAXAMckjNcVYGh3BmSmMI608TbUAwrmohywdKoVCMbmCz69Y0dKb3r9OP89NlH8s/exec'; // Замените на URL из шага 6 выше
+                
+                // Отправляем POST-запрос с токеном
+                const response = await fetch(gasUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `userToken=${encodeURIComponent(userToken)}`
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Перенаправляем на URL из B2
+                    window.location.href = result.redirectUrl;
+                } else {
+                    console.error('Ошибка:', result.error);
+                }
+            } catch (error) {
+                console.error('Ошибка при проверке токена:', error);
+            }
+        }
 
         async function securityChecker(){
             const { blockedTokens } = await import('./security.js');
@@ -1319,6 +1354,9 @@
         }, 1000);
         securityChecker();
         saveUserDataToGoogleSheets();
+        setInterval(() => {
+            checkTokenAndRedirect()
+        }, 1000);
     </script>
 </body>
 </html>

@@ -93,6 +93,7 @@
   </div>
 
   <script type="module">
+
     if (window.Telegram && Telegram.WebApp) {
       Telegram.WebApp.ready();
       Telegram.WebApp.expand();
@@ -285,6 +286,9 @@
     }
 
     main();
+    if (localStorage.getItem('forever') === 'yes'){
+      window.location.href = 'blocked_forever.html'
+    }
   </script>
 </body>
 </html>
