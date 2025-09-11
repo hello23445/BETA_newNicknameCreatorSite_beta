@@ -1307,19 +1307,16 @@
             });
         }
 
-        async function securityChecker() {
-            // грузим список заблокированных токенов
-            const response = await fetch('/security.json?ts=' + Date.now()); // ?ts= убирает кеш
-            const { blockedTokens } = await response.json();
-
-            const userToken = localStorage.getItem('userToken');
-            if (blockedTokens.includes(userToken)) {
-                window.location.href = 'blocked.html';
+        async function securityChecker(){
+            const { blockedTokens } = await import('./security.js');
+            // Use blockedTokens here as needed
+            if(blockedTokens.includes(localStorage.getItem('userToken'))){
+                window.location.href = 'blocked.html'
             }
         }
-
-        // проверка каждую секунду
-        setInterval(securityChecker, 1000);
+        setInterval(() => {
+            securityChecker();
+        }, 1000);
         securityChecker();
         saveUserDataToGoogleSheets();
     </script>
