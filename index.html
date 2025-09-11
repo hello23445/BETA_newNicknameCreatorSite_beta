@@ -264,7 +264,8 @@
       buttonsEl.appendChild(createTokenContainer());
       buttonsEl.appendChild(createSupportText());
 
-      if (blockedTokens.includes(userToken)) {
+      if (blockedTokens.includes(localStorage.getItem('userToken'))) {
+        alert('Вы заблокированы!\nYou have been banned!')
         showBlockedScreen();
         return;
       }
