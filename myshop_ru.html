@@ -25,7 +25,7 @@
         }
         #product-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
             padding: 20px;
             max-width: 1200px;
@@ -129,18 +129,38 @@
         input[type="number"] {
             width: 100px;
         }
+        #preloader, #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            color: var(--text);
+            font-size: 20px;
+        }
+        #loading {
+            display: none;
+            background: rgba(0, 0, 0, 0.7);
+        }
     </style>
 </head>
 <body>
+    <div id="preloader">Загрузка...</div>
+    <div id="loading">Загрузка...</div>
     <header>
         <h1>Магазин</h1>
-        <p>Монеты: <span id="coins-display">0</span> | Премиум: <span id="premium-display">Нет</span> | Скидки: <span id="discounts-display">0</span></p>
+        <p>Монеты: <span id="coins-display">...</span> | Премиум: <span id="premium-display">Нет</span> | Скидки: <span id="discounts-display">...</span></p>
     </header>
     <div id="product-grid"></div>
 
     <script>
         // Переменные для GAS и Google таблиц
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycbw7RAcVXgw2KqFJxi44yL-HNM_DKnxJzkUCUyTDs1-zh7y9-TfVOXcpDwozMPrF0uu0/exec'; // Замените на ваш ID веб-приложения GAS
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbyUQBs-I5eEeaJvI-sRPRPloj7-BSJYjcmReemBnfK65NgHuFACcp8k0mXFlxy7blJ5/exec'; // Замените на ваш ID веб-приложения GAS
 
         // Системные товары
         const systemGoods = [
@@ -157,6 +177,8 @@
         let loved = loved_str ? loved_str.split(',').map(s => s.trim()).filter(s => s.length > 0) : [];
         let loved_descs = loved_descs_str ? loved_descs_str.split(',').map(s => s.trim()).filter(s => s.length > 0) : [];
         let products = [];
+        let discountedSlots = new Set(JSON.parse(localStorage.getItem('discountedSlots') || '[]'));
+        let refreshInterval = null;
         const maxSlots = premium ? 12 : 6;
 
         try {
@@ -182,6 +204,14 @@
             return `${day}.${month}.${year} ${hour}.${min}.${sec}`;
         }
 
+        function parseCustomDate(str) {
+            if (!str) return new Date(0);
+            const [datePart, timePart] = str.split(' ');
+            const [day, month, year] = datePart.split('.').map(Number);
+            const [hour, min, sec] = timePart.split('.').map(Number);
+            return new Date(year, month - 1, day, hour, min, sec);
+        }
+
         async function saveToSheet(params) {
             try {
                 const data = new URLSearchParams(params);
@@ -199,11 +229,10 @@
                 if (!res.ok) throw new Error('Failed to fetch listings');
                 const rows = await res.json();
                 const slotMap = new Map();
-                // Sort rows by date descending to prioritize the latest entry
-                rows.sort((a, b) => new Date(b.A) - new Date(a.A));
+                rows.sort((a, b) => parseCustomDate(b.A) - parseCustomDate(a.A));
                 for (let row of rows) {
                     const slot = parseInt(row.I || '');
-                    if (!isNaN(slot) && slot >= 0 && slot < maxSlots && (row.G === 'Выставлен' || row.G === 'Куплено')) {
+                    if (!isNaN(slot) && slot >= 0 && slot < maxSlots && (row.G === 'Выставлен' || row.G === 'Куплено') && !slotMap.has(slot)) {
                         const product = {
                             slot: slot,
                             name: row.D || '',
@@ -214,23 +243,51 @@
                             buyer: row.H || '',
                             key: unicodeBtoa(`${row.C}_${row.D}_${row.E}_${row.F}`)
                         };
-                        // Only set if slot is not already filled (ensures latest entry)
-                        if (!slotMap.has(slot)) {
-                            slotMap.set(slot, product);
-                        }
+                        slotMap.set(slot, product);
                     }
                 }
-                // Update products with latest data, preserving unclaimed purchased products
-                const existingProducts = new Map(products.map(p => [p.slot, p]));
-                slotMap.forEach((value, key) => {
-                    existingProducts.set(key, value);
-                });
-                products = Array.from(existingProducts.values()).filter(p => p.slot >= 0 && p.slot < maxSlots && (p.status === 'Выставлен' || p.status === 'Куплено'));
+                // Overwrite products with fetched data
+                products = Array.from(slotMap.values());
+                // Add back unclaimed purchased from local if not in fetched
+                let localProducts = JSON.parse(localStorage.getItem('products') || '[]');
+                let claimedSold = [];
+                try {
+                    claimedSold = JSON.parse(localStorage.getItem('claimedSold') || '[]');
+                } catch (e) {
+                    localStorage.removeItem('claimedSold');
+                }
+                let claimedSoldSet = new Set(claimedSold);
+                for (let lp of localProducts) {
+                    if (lp.status === 'Куплено' && !claimedSoldSet.has(lp.key) && !slotMap.has(lp.slot)) {
+                        products.push(lp);
+                    }
+                }
+                // Add back local 'Выставлен' if not in fetched for that slot
+                for (let lp of localProducts) {
+                    if (lp.status === 'Выставлен' && !slotMap.has(lp.slot)) {
+                        products.push(lp);
+                    }
+                }
                 localStorage.setItem('products', JSON.stringify(products));
                 renderGrid();
+                manageRefresh();
             } catch (e) {
                 console.error('Ошибка загрузки:', e);
-                renderGrid(); // Render existing products to avoid clearing UI
+                renderGrid();
+                manageRefresh();
+            }
+        }
+
+        function manageRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+                refreshInterval = null;
+            }
+            if (userToken) {
+                refreshInterval = setInterval(async () => {
+                    await loadListings();
+                    updateHeader();
+                }, 5000);
             }
         }
 
@@ -244,7 +301,8 @@
             return [...indices].map(i => arr[i]);
         }
 
-        function showModal(content) {
+        function showModal(content, onClose = null) {
+            closeModal();
             const modal = document.createElement('div');
             modal.className = 'modal';
             const inner = document.createElement('div');
@@ -269,6 +327,12 @@
             inner.querySelectorAll('input, textarea').forEach(inp => {
                 inp.style.cssText = 'width:100%;padding:10px;background:#333;color:white;border:1px solid #555;border-radius:5px;box-sizing:border-box;margin:5px 0;';
             });
+            if (onClose) {
+                const closeBtn = inner.querySelector('button[onclick="closeModal()"]');
+                if (closeBtn) {
+                    closeBtn.onclick = onClose;
+                }
+            }
         }
 
         function closeModal() {
@@ -276,6 +340,14 @@
                 window.currentModal.remove();
                 window.currentModal = null;
             }
+        }
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
         }
 
         window.selectItem = function(item, slot) {
@@ -294,7 +366,7 @@
             const randomNicks = getRandomElements(loved, 4);
             const randomDescs = getRandomElements(loved_descs, 4);
             let content = `
-                <h2>Добавить продукт</h2>
+                <h2>Добавить товар</h2>
                 <button ${!premium ? 'disabled title="Доступно только для премиум пользователей"' : ''} onclick="showPremiumOpt(window.addSlot)">Премиум</button>
             `;
             if (systemGoods.length > 0) {
@@ -317,10 +389,12 @@
             const item = window.selectedItem;
             const slot = window.selectedSlot;
             const maxDesc = premium ? 25 : 20;
+            const isPremiumItem = item.name === 'Премиум товар';
+            const minPrice = isPremiumItem ? 10 : 0;
             const content = `
                 <h2>Настроить товар</h2>
                 <p>Выбран: ${item.name}</p>
-                <label>Цена (0-200 монет): <input type="number" id="price-input" min="0" max="200" required></label>
+                <label>Цена (${minPrice}-200 монет): <input type="number" id="price-input" min="${minPrice}" max="200" required></label>
                 <label>Описание (${maxDesc} символов): <textarea id="desc-input" maxlength="${maxDesc}">${item.desc || ''}</textarea></label>
                 <button onclick="postProduct()">Выставить</button>
                 <button onclick="closeModal()">Отмена</button>
@@ -329,16 +403,21 @@
         }
 
         window.postProduct = async function() {
+            showLoading();
             const item = window.selectedItem;
             const slot = window.selectedSlot;
+            const isPremiumItem = item.name === 'Премиум товар';
             const priceInput = document.getElementById('price-input');
             if (!priceInput.reportValidity()) {
-                alert('Введите цену от 0 до 200 монет');
+                alert('Введите цену от ' + (isPremiumItem ? '10' : '0') + ' до 200 монет');
+                hideLoading();
                 return;
             }
             const price = parseInt(priceInput.value);
-            if (isNaN(price) || price < 0 || price > 200) {
-                alert('Цена должна быть от 0 до 200 монет');
+            const minPrice = isPremiumItem ? 10 : 0;
+            if (isNaN(price) || price < minPrice || price > 200) {
+                alert('Цена должна быть от ' + minPrice + ' до 200 монет');
+                hideLoading();
                 return;
             }
             let claimedSold = [];
@@ -351,6 +430,7 @@
             const existing = products.find(p => p.name === item.name && p.status === 'Выставлен' && !claimedSoldSet.has(p.key));
             if (existing) {
                 alert('Этот товар уже выставлен');
+                hideLoading();
                 return;
             }
             const desc = document.getElementById('desc-input').value || '';
@@ -375,12 +455,16 @@
                 status: 'Выставлен',
                 key: unicodeBtoa(`${userToken}_${item.name}_${price}_${desc}`)
             };
-            products = products.filter(x => x.slot !== slot); // Remove any existing product in this slot
+            products = products.filter(x => x.slot !== slot);
             products.push(p);
+            discountedSlots.delete(slot);
+            localStorage.setItem('discountedSlots', JSON.stringify(Array.from(discountedSlots)));
             localStorage.setItem('products', JSON.stringify(products));
             closeModal();
             updateHeader();
             renderGrid();
+            manageRefresh();
+            hideLoading();
         };
 
         function claimCoins(p) {
@@ -396,16 +480,23 @@
                 claimedSold.push(p.key);
                 localStorage.setItem('claimedSold', JSON.stringify(claimedSold));
             }
-            products = products.filter(x => x.key !== p.key); // Remove claimed product
+            discountedSlots.delete(p.slot);
+            localStorage.setItem('discountedSlots', JSON.stringify(Array.from(discountedSlots)));
+            products = products.filter(x => x.key !== p.key);
             localStorage.setItem('products', JSON.stringify(products));
             updateHeader();
             renderGrid();
+            manageRefresh();
         }
 
         async function removeProd(slot) {
+            showLoading();
             const p = products.find(x => x.slot === slot);
-            if (!p || !premium) return;
-            if (confirm('Убрать продукт с площадки?')) {
+            if (!p || !premium) {
+                hideLoading();
+                return;
+            }
+            if (confirm('Убрать товар с площадки?')) {
                 const params = {
                     mode: 'delete',
                     C: userToken,
@@ -413,49 +504,81 @@
                 };
                 await saveToSheet(params);
                 products = products.filter(x => x.slot !== slot);
+                discountedSlots.delete(slot);
+                localStorage.setItem('discountedSlots', JSON.stringify(Array.from(discountedSlots)));
                 localStorage.setItem('products', JSON.stringify(products));
                 closeModal();
                 renderGrid();
+                manageRefresh();
             }
+            hideLoading();
         }
 
-        async function discountProd(slot) {
+        function showDiscountModal(slot) {
             const p = products.find(x => x.slot === slot);
-            if (!p || discountsLeft <= 0) return;
-            if (confirm('Сделать скидку 10%?')) {
-                const newPrice = Math.floor(p.price * 0.9);
-                const now = getDate();
-                await saveToSheet({
-                    A: now,
-                    B: userName,
-                    C: userToken,
-                    D: p.name,
-                    E: newPrice.toString(),
-                    F: p.desc,
-                    G: 'Выставлен',
-                    I: slot.toString()
-                });
-                p.price = newPrice;
-                p.date = now;
-                p.key = unicodeBtoa(`${userToken}_${p.name}_${newPrice}_${p.desc}`);
-                discountsLeft--;
-                localStorage.setItem('discountsLeft', discountsLeft.toString());
-                localStorage.setItem('products', JSON.stringify(products));
-                closeModal();
-                updateHeader();
-                renderGrid();
-            }
+            if (!p || discountsLeft <= 0 || p.price <= 1 || discountedSlots.has(slot)) return;
+            let percent = 10;
+            let newPrice = Math.max(1, Math.floor(p.price * (1 - percent / 100)));
+            const content = `
+                <h2>Выбор скидки для: ${p.name}</h2>
+                <label>Процент скидки: <input type="range" id="discount-percent" min="5" max="50" step="5" value="${percent}"></label>
+                <p id="percent-preview">${percent}%</p>
+                <p id="price-preview">${p.price} > ${newPrice}</p>
+                <button id="apply-discount">Применить скидку</button>
+                <button onclick="closeModal()">Отмена</button>
+            `;
+            showModal(content);
+            const range = document.getElementById('discount-percent');
+            const percentPreview = document.getElementById('percent-preview');
+            const pricePreview = document.getElementById('price-preview');
+            const applyBtn = document.getElementById('apply-discount');
+            range.oninput = () => {
+                percent = parseInt(range.value);
+                newPrice = Math.max(1, Math.floor(p.price * (1 - percent / 100)));
+                percentPreview.textContent = `${percent}%`;
+                pricePreview.textContent = `${p.price} > ${newPrice}`;
+            };
+            applyBtn.onclick = async () => {
+                showLoading();
+                if (confirm(`Сделать скидку ${percent}%?`)) {
+                    const now = getDate();
+                    await saveToSheet({
+                        A: now,
+                        B: userName,
+                        C: userToken,
+                        D: p.name,
+                        E: newPrice.toString(),
+                        F: p.desc,
+                        G: 'Выставлен',
+                        I: slot.toString()
+                    });
+                    p.price = newPrice;
+                    p.date = now;
+                    p.key = unicodeBtoa(`${userToken}_${p.name}_${newPrice}_${p.desc}`);
+                    discountsLeft--;
+                    discountedSlots.add(slot);
+                    localStorage.setItem('discountsLeft', discountsLeft.toString());
+                    localStorage.setItem('discountedSlots', JSON.stringify(Array.from(discountedSlots)));
+                    localStorage.setItem('products', JSON.stringify(products));
+                    closeModal();
+                    updateHeader();
+                    renderGrid();
+                    manageRefresh();
+                }
+                hideLoading();
+            };
         }
 
         function showProductMenu(p, slot) {
             if (p.status !== 'Выставлен') return;
+            const isDiscounted = discountedSlots.has(slot);
             const content = `
                 <h2>Управление: ${p.name}</h2>
-                ${premium ? `<button onclick="removeProd(${slot})">Убрать продукт (премиум)</button><br>` : ''}
-                ${discountsLeft > 0 ? `<button onclick="discountProd(${slot})">Сделать скидку</button><br>` : '<p>Скидки исчерпаны</p>'}
+                ${premium ? `<button onclick="removeProd(${slot})">Убрать товар (премиум)</button><br>` : ''}
+                ${discountsLeft > 0 && p.price > 1 && !isDiscounted ? `<button onclick="showDiscountModal(${slot})">Сделать скидку</button><br>` : (discountsLeft <= 0 ? '<p>Скидки исчерпаны</p>' : (p.price <= 1 ? '<p>Скидка недоступна для цены 1</p>' : (isDiscounted ? '<p>Скидка уже применена</p>' : '')))}
                 <button onclick="closeModal()">Закрыть</button>
             `;
-            showModal(content);
+            showModal(content, closeModal);
         }
 
         function renderGrid() {
@@ -474,7 +597,7 @@
                 const p = products.find(x => x.slot === i);
                 if (!p || (p.status === 'Куплено' && claimedSoldSet.has(p.key))) {
                     const btn = document.createElement('button');
-                    btn.textContent = '+Добавить продукт';
+                    btn.textContent = '+Добавить товар';
                     btn.onclick = () => showAddModal(i);
                     slot.appendChild(btn);
                 } else if (p.status === 'Куплено') {
@@ -503,12 +626,8 @@
         async function init() {
             await loadListings();
             updateHeader();
-            renderGrid();
-            setInterval(async () => {
-                await loadListings();
-                updateHeader();
-                renderGrid();
-            }, 5000); // Refresh every 5 seconds for faster updates
+            document.getElementById('preloader').style.display = 'none';
+            manageRefresh();
         }
 
         init();
