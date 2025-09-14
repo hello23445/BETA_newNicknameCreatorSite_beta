@@ -163,6 +163,36 @@
         // Переменные для GAS и Google таблиц
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbzWMD_I-F3O0EHGYypQrszNyub1KAJGH5HL7w04gG26i-1XeESk4TC3p2dIODdpW1sY/exec'; // Замените на ваш ID веб-приложения GAS
 
+        function refillDailyDiscountsPremium() {
+            const today = new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"
+            const lastRefill = localStorage.getItem('lastDiscountRefill');
+
+            if (lastRefill !== today) {
+                // Проверяем премиум
+                const isPremium = localStorage.getItem('premium') === 'yes'; // теперь премиум хранится как 'yes'
+
+                // Выбираем количество пополнения
+                const amount = isPremium ? 10 : 2;
+
+                // Получаем текущее значение discountsLeft (или 0, если нет)
+                let discountsLeft = parseInt(localStorage.getItem('discountsLeft'), 10) || 0;
+
+                // Пополняем
+                discountsLeft = amount;
+
+                // Сохраняем новое значение и дату
+                localStorage.setItem('discountsLeft', discountsLeft);
+                localStorage.setItem('lastDiscountRefill', today);
+
+                console.log(`Пополнение выполнено: now discountsLeft = ${discountsLeft}`);
+            } else {
+                console.log('Пополнение сегодня уже выполнено.');
+            }
+        }
+
+        // Вызываем при загрузке страницы
+        refillDailyDiscountsPremium();
+
         // Вспомогательные функции
         function safeParseJSON(key, fallback) {
             try {

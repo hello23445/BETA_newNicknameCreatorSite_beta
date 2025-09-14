@@ -176,6 +176,37 @@
             }
         }
 
+        function refillDailyDiscountsPremium() {
+            const today = new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"
+            const lastRefill = localStorage.getItem('lastDiscountRefill');
+
+            if (lastRefill !== today) {
+                // Проверяем премиум
+                const isPremium = localStorage.getItem('premium') === 'yes'; // теперь премиум хранится как 'yes'
+
+                // Выбираем количество пополнения
+                const amount = isPremium ? 10 : 2;
+
+                // Получаем текущее значение discountsLeft (или 0, если нет)
+                let discountsLeft = parseInt(localStorage.getItem('discountsLeft'), 10) || 0;
+
+                // Пополняем
+                discountsLeft = amount;
+
+                // Сохраняем новое значение и дату
+                localStorage.setItem('discountsLeft', discountsLeft);
+                localStorage.setItem('lastDiscountRefill', today);
+
+                console.log(`Пополнение выполнено: now discountsLeft = ${discountsLeft}`);
+            } else {
+                console.log('Пополнение сегодня уже выполнено.');
+            }
+        }
+
+        // Вызываем при загрузке страницы
+        refillDailyDiscountsPremium();
+
+
         function loadArrayFromStorage(key, fallback = []) {
             const raw = localStorage.getItem(key);
             if (!raw) return fallback;
