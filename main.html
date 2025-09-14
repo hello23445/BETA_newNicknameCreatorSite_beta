@@ -167,7 +167,7 @@
             padding: 0;
             background: radial-gradient(circle at center, #0a0a0a 0%, #000 100%);
             color: #ff6600;
-/*             font-family: 'Creepster', cursive; */
+            /* font-family: 'Creepster', cursive; */
             overflow-x: hidden;
             height: 100vh;
             position: relative;
@@ -321,44 +321,6 @@
 
 <!-- Падающие тыквы -->
 <img src="https://png.pngtree.com/png-clipart/20230814/original/pngtree-illustration-of-scary-halloween-pumpkin-picture-image_7938109.png" class="pumpkin p1">
-<img src="d.png" class="pumpkin p2" onclick="secret()" style="pointer-events: all; width: 13%">
-<style>
-html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    overflow-x: hidden; /* чтобы не появлялся горизонтальный скролл */
-}
-
-.pumpkin.p3 {
-    position: fixed;
-    bottom: 0;
-    left: -100%;
-    width: 100%;
-    height: auto;
-    z-index: 0;
-    animation: roll 30s linear infinite;
-}
-
-@media (max-width: 768px) {
-    .pumpkin.p3 {
-        left: -120%;
-        width: 120%;
-        animation-duration: 20s;
-        transform: translateY(0); /* фиксируем позицию по Y */
-    }
-}
-
-@media (max-width: 480px) {
-    .pumpkin.p3 {
-        margin-top: 65%;
-        left: -130%;
-        width: 200%;
-        animation-duration: 15s;
-        transform: translateY(0);
-    }
-}
-</style>
 
 <img src="d.png" class="pumpkin p3">
 
@@ -515,34 +477,6 @@ html, body {
             alert('✅');
             document.getElementById('coins').textContent = '🪙' + localStorage.getItem('coins' || 1)
         }
-        const pumpkin = document.getElementById('giantPumpkin');
-
-        function rollPumpkin() {
-            // Случайная длительность от 4 до 15 секунд
-            const duration = Math.random() * (15 - 4) + 4; // в секундах
-
-            // Показать тыкву
-            pumpkin.style.display = 'block';
-            pumpkin.style.animation = `roll ${duration}s linear forwards`;
-
-            // Через duration секунд скрыть её
-            setTimeout(() => {
-                pumpkin.style.display = 'none';
-                pumpkin.style.left = '-150%'; // вернуть в исходное положение
-                pumpkin.style.animation = '';
-            }, duration * 1000);
-        }
-
-        // Случайное появление каждые 2–5 минут
-        function schedulePumpkin() {
-            const delay = Math.random() * (5*60*1000 - 2*60*1000) + 2*60*1000; // 2–5 мин
-            setTimeout(() => {
-                rollPumpkin();
-                schedulePumpkin(); // рекурсивно планируем следующее появление
-            }, delay);
-        }
-
-        schedulePumpkin();
 
 
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxbr9H0F70BHo2js1tKD_P1MVChn-9NKr8av1p0ZtJj6h9845b3dB2xDarr_B1zpFwR/exec';
@@ -1626,5 +1560,4 @@ html, body {
         }, 1000);
     </script>
 </body>
-
 </html>
