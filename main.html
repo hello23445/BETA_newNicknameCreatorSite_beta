@@ -329,7 +329,8 @@
             ai: 'ai.html',
             support: 'support.html',
             connection: 'connection.html',
-            popular: 'popular(ru).html'
+            popular: 'popular(ru).html',
+            myshop: 'myshop_ru.html'
         };
 
         const filesEn = {
@@ -346,7 +347,8 @@
             ai: 'ai_en.html',
             support: 'support_en.html',
             connection: 'connection_en.html',
-            popular: 'popular(en).html'
+            popular: 'popular(en).html',
+            myshop: 'myshop_en.html'
         };
 
         let storedCoins = parseInt(localStorage.getItem('coins'));
@@ -371,6 +373,7 @@
 
         let translations = {
             ru: {
+                premium: 'Премиум',
                 main: "Что будем создавать?",
                 maintenance: "Проводится техническое обслуживание.",
                 settingsTitle: "Настройки",
@@ -403,9 +406,11 @@
                 profile: "Мой профиль",
                 popular: "Популярное",
                 settings: "Настройки",
-                wishlist: "Мой список избранного"
+                wishlist: "Мой список избранного",
+                myshop: "Мой магазин"
             },
             en: {
+                premium: 'Premium',
                 main: "What do you want to create?",
                 maintenance: "Maintenance in progress.",
                 settingsTitle: "Settings",
@@ -438,7 +443,8 @@
                 profile: "My profile",
                 popular: "Popular",
                 settings: "Settings",
-                wishlist: "My wishlist"
+                wishlist: "My wishlist",
+                myshop: "My Shop"
             }
         };
 
@@ -1289,6 +1295,8 @@
                 { textKey: 'profile', icon: 'fa-solid fa-user', href: 'user_profile.html' },
                 { textKey: 'popular', icon: 'fa-solid fa-square-poll-vertical', href: files.popular },
                 { textKey: 'wishlist', icon: 'fa-solid fa-clipboard-list', href: 'izbr.html' },
+                { textKey: 'myshop', icon: 'fa-solid fa-shop', href: files.myshop },
+                { textKey: 'premium', icon: 'fa-solid fa-crown', href: 'premium.screen.html' },
                 { textKey: 'settings', icon: 'fa-solid fa-gear', onClick: () => { hideSideMenu(); showSettings(); } }
             ];
             items.forEach(item => {
