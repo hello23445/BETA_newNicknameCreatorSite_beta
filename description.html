@@ -976,26 +976,53 @@ button.addEventListener('click', () => {
         }, 3500);
     };
 
+    // функция очистки текста от запятых
+    function cleanDescFromCommas(text) {
+        if (!text) return '';
+        let res = '';
+        for (let i = 0; i < text.length; i++) {
+            const ch = text[i];
+            if (ch === ',') {
+                const next = text[i + 1];
+                if (next === ' ') {
+                    // убираем запятую перед пробелом
+                    continue;
+                } else {
+                    // одиночная запятая -> пробел (без дублей)
+                    if (res.length === 0 || res[res.length - 1] !== ' ') {
+                        res += ' ';
+                    }
+                }
+            } else {
+                res += ch;
+            }
+        }
+        return res.replace(/\s+/g, ' ').trim();
+    }
+
+    const cleanedDesc = cleanDescFromCommas(fullDescription.textContent);
+
     if (!loved) {
         // если ничего нет – создаём строку с первым элементом
-        loved = fullDescription.textContent;
+        loved = cleanedDesc;
         localStorage.setItem('loved_descs', loved);
         button.textContent = "✅";
         resetButton();
     } else {
         // проверяем, есть ли уже
         let lovedArray = loved.split(',').map(item => item.trim());
-        if (lovedArray.includes(fullDescription.textContent)) {
+        if (lovedArray.includes(cleanedDesc)) {
             button.textContent = "Уже в избранном";
             resetButton();
         } else {
-            loved += `, ${fullDescription.textContent}`;
+            loved += `, ${cleanedDesc}`;
             localStorage.setItem('loved_descs', loved);
             button.textContent = "✅";
             resetButton();
         }
     }
 });
+
 
 const descriptions = [
     "Прекрасный день для творчества!",
@@ -1144,6 +1171,7 @@ let shadowStrength = shadowRange.value;
 
 descriptionInput.addEventListener('input', () => {
   next1.disabled = descriptionInput.value.trim() === '';
+  document.getElementById('description').value.replace(/,/g, ' ');
   updatePreview();
 });
 
@@ -1261,7 +1289,7 @@ function getFormatStyle() {
 }
 
 function updatePreview() {
-  let text = descriptionInput.value;
+  let text = descriptionInput.value
   if (selectedEmoji) {
     text = `${selectedDecorationLeft ? selectedEmoji : ''} ${text} ${selectedDecorationRight ? selectedEmoji : ''}`;
   }
