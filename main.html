@@ -274,7 +274,7 @@
             z-index: 10;
         }
         /* 20 уникальных тыкв */
-        .p1  { left: 5%;  animation-duration: 15s; animation-delay: 0s; }
+        .p1  { left: 5%;  animation-duration: 30s; animation-delay: 0s; }
         .p2  { left: 10%; animation-duration: 15s; animation-delay: 2s; }
         .p3  { left: 15%; animation-duration: 18s; animation-delay: 4s; }
         .p4  { left: 20%; animation-duration: 14s; animation-delay: 1s; }
@@ -320,9 +320,8 @@
 <div class="cloud cloud2"></div>
 
 <!-- Падающие тыквы -->
-<img src="https://png.pngtree.com/png-clipart/20230814/original/pngtree-illustration-of-scary-halloween-pumpkin-picture-image_7938109.png" class="pumpkin p1">
-
-<img src="d.png" class="pumpkin p3">
+<img src="https://png.pngtree.com/png-clipart/20230814/original/pngtree-illustration-of-scary-halloween-pumpkin-picture-image_7938109.png" class="pumpkin p1" onclick="secret()" style="width: 100px; pointer-events: all;" id="p1">
+<img src="https://png.pngtree.com/png-clipart/20230814/original/pngtree-illustration-of-scary-halloween-pumpkin-picture-image_7938109.png" class="pumpkin p3">
 
 
 
@@ -472,10 +471,18 @@
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
     <script>
         function secret() {
-            const a = localStorage.getItem('coins') || '0'
-            localStorage.setItem('coins', String(parseInt(a) + 1));
-            alert('✅');
-            document.getElementById('coins').textContent = '🪙' + localStorage.getItem('coins' || 1)
+            const a1 = Math.floor(Math.random() * 6) + 1;
+            if (a1 === 4 || a1 === 5) {
+                const a = localStorage.getItem('coins') || '0'
+                localStorage.setItem('coins', String(parseInt(a) + 1));
+                alert('+1🪙');
+                document.getElementById('coins').textContent = '🪙' + localStorage.getItem('coins' || 1)
+            }
+            document.getElementById("p1").style.display = "none";
+            setTimeout(function() {
+                document.getElementById("p1").style.display = "block";
+            }, 4000);
+            document.getElementById("p1").style.display = "none";
         }
 
 
