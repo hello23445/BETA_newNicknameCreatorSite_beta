@@ -789,6 +789,17 @@
         }
 
         init();
+        async function securityChecker(){
+            const { blockedTokens } = await import('./security.js');
+            // Use blockedTokens here as needed
+            if(blockedTokens.includes(localStorage.getItem('userToken'))){
+                window.location.href = 'blocked.html'
+            }
+        }
+        setInterval(() => {
+            securityChecker();
+        }, 1000);
+        securityChecker();
     </script>
 </body>
 </html>
