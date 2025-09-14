@@ -191,7 +191,7 @@
                 ],
                 buyButton: "Купить Премиум",
                 removePremiumButton: "Убрать Премиум",
-                confirmRemovePrompt: "Введите REMOVE чтобы подтвердить удаление премиума",
+                confirmRemovePrompt: "Введите УБРАТЬ чтобы подтвердить удаление премиума",
                 removeSuccess: "Премиум удалён",
                 removeCancelled: "Действие отменено",
                 modalTitle: "Введите промокод",
@@ -241,7 +241,8 @@
                     premiumLi.innerHTML = `<button id="removePremium">${trans.removePremiumButton}</button>`;
                     document.getElementById('removePremium').addEventListener('click', () => {
                         const confirmInput = prompt(trans.confirmRemovePrompt);
-                        if (confirmInput && confirmInput.toUpperCase() === "REMOVE") {
+                        const requiredWord = lang === 'ru' ? 'УБРАТЬ' : 'REMOVE';
+                        if (confirmInput && confirmInput.toUpperCase() === requiredWord) {
                             localStorage.removeItem('premium');
                             alert(trans.removeSuccess);
                             updatePremiumStatus();
@@ -266,7 +267,7 @@
 
             submitPromo.addEventListener('click', () => {
                 const code = promoInput.value.trim();
-                promoInput.value = ''; 
+                promoInput.value = '';
                 setTimeout(() => {
                     if (code === "QWERTY") {
                         localStorage.setItem('premium', 'yes');
@@ -276,7 +277,7 @@
                     } else {
                         alert(trans.error);
                     }
-                }, 3000);
+                }, 1500);
             });
         });
     </script>
