@@ -697,6 +697,27 @@
             document.getElementById('timer').innerHTML = `Update in ${minutes}:${seconds.toString().padStart(2, '0')}`;
         }
 
+        function checkForChanges() {
+            fetch(`${SCRIPT_URL}?op=get`)
+                .then(res => res.json())
+                .then(newData => {
+                    const oldData = JSON.parse(localStorage.getItem('shopData')) || [];
+                    let hasChanges = false;
+                    newData.forEach((row, index) => {
+                        if (index === 0) return;
+                        const oldRow = oldData[index];
+                        if (oldRow && (row[1] !== oldRow[1] || parseFloat(row[4]) !== parseFloat(oldRow[4]))) {
+                            hasChanges = true;
+                        }
+                    });
+                    if (hasChanges) {
+                        displayProducts(newData);
+                        localStorage.setItem('shopData', JSON.stringify(newData));
+                    }
+                })
+                .catch(err => console.error(err));
+        }
+
         // Close more modal
         document.getElementById('close-more').onclick = () => {
             document.getElementById('more-modal').style.display = 'none';
@@ -834,6 +855,7 @@
             initNextUpdateTime();
             updateTimer();
             setInterval(updateTimer, 1000);
+            setInterval(checkForChanges, 1000);
 
             // Disable copying and context menu
             document.addEventListener('contextmenu', event => event.preventDefault());
