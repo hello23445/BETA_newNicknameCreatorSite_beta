@@ -404,14 +404,6 @@
         </div>
     </div>
     
-    <!-- Screenshot modal -->
-    <div id="screenshot-modal" class="modal">
-        <div class="modal-content">
-            <p id="screenshot-text">Снимки экрана запрещены!</p>
-            <button id="close-screenshot" class="close-btn">ОК</button>
-        </div>
-    </div>
-    
     <!-- Scam modal -->
     <div id="scam-modal" class="modal">
         <div class="modal-content">
@@ -421,7 +413,8 @@
     </div>
     
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbztp4l-4m29QisFNyiFm7PYVZQt0gN4i31LdnYCqCBo-M5IHvMIO_OWY0cL047FcreB/exec';
+        const SCRIPT_URL =
+        'https://script.google.com/macros/s/AKfycbwwGJe_rJyoEWMgOIsSwh4OjnCc2Iv621w9VUHaKmUdcqqM5WgXloV16YMKBRQ5twI/exec';
 
         let currentSeller = null;
         let currentToken = null;
@@ -459,6 +452,7 @@
             const container = document.getElementById('container');
             container.innerHTML = '';
             const userName = localStorage.getItem('userName') || '';
+            const userToken = localStorage.getItem('userToken') || '';
             let hasProducts = false;
             rows.forEach((row, index) => {
                 if (index === 0) return; // Skip header
@@ -474,12 +468,15 @@
                 let qty = parseInt(row[10]);
                 qty = isNaN(qty) ? 1 : Math.max(0, qty);
 
+                if (token === userToken) return; // Hide own products
+
                 const isAvailable = (status === 'Выставлен' || status === 'Listed') && qty > 0;
-                if (!isAvailable) return; // Do not show bought products
+
+                if (!isAvailable && buyer !== userName) return; // Do not show bought products unless bought by user
 
                 hasProducts = true;
 
-                const isPremium = name === "Премиум";
+                const isPremium = name === "Бейдж \"👑Премиум\" к профилю";
                 const isScam = isPremium && seller !== "Аноним" && seller !== "Продавец премиума";
 
                 const card = document.createElement('div');
@@ -489,6 +486,7 @@
                 card.dataset.price = price;
                 card.dataset.status = status;
                 card.dataset.buyer = buyer;
+                card.dataset.token = token;
                 card.innerHTML = `
                     <p><strong>Продавец:</strong> ${seller}</p>
                     <h3>${name}</h3>
@@ -519,7 +517,7 @@
                 }
                 card.appendChild(buyBtn);
 
-                if (!isAvailable && buyer === userName) {
+                if (buyer === userName) {
                     const copyBtn = document.createElement('button');
                     copyBtn.className = 'copy-btn';
                     copyBtn.textContent = 'Копировать';
@@ -566,8 +564,30 @@
                 document.getElementById('insufficient-modal').style.display = 'flex';
                 return;
             }
+            const userToken = localStorage.getItem('userToken') || '';
+            const sellerToken = card.dataset.token;
+            if (sellerToken === userToken) {
+                showMessage("Вы не можете купить свой же товар!");
+                return;
+            }
+            const isSpecial = name === "Премиум" || name === "Бейдж \"👑Премиум\" к профилю";
+            if (!isSpecial) {
+                const boughtItems = (localStorage.getItem('bought') || '').split(',');
+                if (boughtItems.includes(name)) {
+                    showMessage("Этот товар уже находится в списке купленных товаров!");
+                    return;
+                }
+            }
             if (name === "Премиум" && localStorage.getItem('premium') === 'yes') {
                 showMessage("У вас уже есть премиум!");
+                return;
+            }
+            if (name === "Бейдж \"👑Премиум\" к профилю" && localStorage.getItem('premium') !== 'yes') {
+                showMessage("У вас нет премиума для покупки этого бейджа!");
+                return;
+            }
+            if (name === "Бейдж \"👑Премиум\" к профилю" && localStorage.getItem('bage1') === 'yes') {
+                showMessage("У вас уже есть этот бейдж!");
                 return;
             }
             showConfirmModal(rowIndex, price, name, card);
@@ -641,15 +661,24 @@
                             buyBtn.textContent = `Купить 1/${qty} за ${currentPrice}`;
                         }
                     }
-                    if (currentName !== "Премиум") {
+                    const isBadge = currentName === "Бейдж \"👑Премиум\" к профилю";
+                    const isPremium = currentName === "Премиум";
+                    if (!isBadge && !isPremium) {
                         let bought = localStorage.getItem('bought') || '';
                         bought += (bought ? ',' : '') + currentName;
                         localStorage.setItem('bought', bought);
                     }
-                    if (currentName === "Премиум") {
+                    if (isPremium) {
                         localStorage.setItem('premium', 'yes');
                     }
-                    showMessage("Куплено!\nПродукт отправлен в ваш список избранных покупок.\nПремиум не отправляется в список покупок, а зачисляется сразу.");
+                    if (isBadge) {
+                        localStorage.setItem('bage1', 'yes');
+                    }
+                    if (isPremium) {
+                        showMessage("Премиум успешно куплен!");
+                    } else {
+                        showMessage("Куплено!\nПродукт отправлен в ваш список избранных покупок.\nБейдж \"👑Премиум\" и \"Премиум\" не отправляются в список покупок, а зачисляются сразу.");
+                    }
                     setTimeout(() => fetchData(true), 1000);
                 } else {
                     showMessage('Ошибка покупки: ' + result);
@@ -674,10 +703,11 @@
 
         function initNextUpdateTime() {
             let savedTime = localStorage.getItem('nextUpdateTime');
+            const updateInterval = localStorage.getItem('premium') === 'yes' ? 60000 : 120000;
             if (savedTime && parseInt(savedTime) > Date.now()) {
                 nextUpdateTime = parseInt(savedTime);
             } else {
-                nextUpdateTime = Date.now() + 120000;
+                nextUpdateTime = Date.now() + updateInterval;
                 localStorage.setItem('nextUpdateTime', nextUpdateTime);
             }
         }
@@ -685,9 +715,10 @@
         function updateTimer() {
             const now = Date.now();
             const diff = nextUpdateTime - now;
+            const updateInterval = localStorage.getItem('premium') === 'yes' ? 60000 : 120000;
             if (diff <= 0) {
                 fetchData(true);
-                nextUpdateTime = now + 120000;
+                nextUpdateTime = now + updateInterval;
                 localStorage.setItem('nextUpdateTime', nextUpdateTime);
                 setTimeout(updateTimer, 1000);
                 return;
@@ -701,16 +732,9 @@
             fetch(`${SCRIPT_URL}?op=get`)
                 .then(res => res.json())
                 .then(newData => {
-                    const oldData = JSON.parse(localStorage.getItem('shopData')) || [];
-                    let hasChanges = false;
-                    newData.forEach((row, index) => {
-                        if (index === 0) return;
-                        const oldRow = oldData[index];
-                        if (oldRow && (row[1] !== oldRow[1] || parseFloat(row[4]) !== parseFloat(oldRow[4]))) {
-                            hasChanges = true;
-                        }
-                    });
-                    if (hasChanges) {
+                    const oldDataStr = localStorage.getItem('shopData') || '[]';
+                    const oldData = JSON.parse(oldDataStr);
+                    if (JSON.stringify(newData) !== JSON.stringify(oldData)) {
                         displayProducts(newData);
                         localStorage.setItem('shopData', JSON.stringify(newData));
                     }
@@ -735,7 +759,7 @@
                 {label: 'Продукт', value: currentName},
                 {label: 'Цена', value: currentPrice},
                 {label: 'Описание', value: currentDesc},
-                {label: 'Количество', value: currentQty}
+                {label: 'Осталось еще:', value: currentQty}
             ];
             
             items.forEach(item => {
@@ -774,11 +798,10 @@
             const selectedReason = document.getElementById('report-reason').value.trim();
             const customReason = document.getElementById('report-input').value.trim();
             let reason = '';
-            if (selectedReason) {
+            if (selectedReason && customReason) {
+                reason = selectedReason + '&' + customReason;
+            } else if (selectedReason) {
                 reason = selectedReason;
-                if (customReason) {
-                    reason += ': ' + customReason;
-                }
             } else if (customReason) {
                 reason = customReason;
             }
@@ -795,7 +818,10 @@
                     reporterToken: userToken,
                     reason: reason,
                     seller: currentSeller,
-                    sellerToken: currentToken
+                    sellerToken: currentToken,
+                    product: currentName,
+                    price: currentPrice,
+                    date: currentDate
                 };
                 fetch(SCRIPT_URL, {
                     method: 'POST',
@@ -832,11 +858,6 @@
             document.getElementById('message-modal').style.display = 'none';
         };
 
-        // Close screenshot
-        document.getElementById('close-screenshot').onclick = () => {
-            document.getElementById('screenshot-modal').style.display = 'none';
-        };
-
         // Close scam
         document.getElementById('close-scam').onclick = () => {
             document.getElementById('scam-modal').style.display = 'none';
@@ -863,14 +884,6 @@
             document.addEventListener('copy', event => event.preventDefault());
             document.addEventListener('cut', event => event.preventDefault());
             document.addEventListener('dragstart', event => event.preventDefault());
-
-            // Detect PrintScreen
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'PrintScreen') {
-                    document.getElementById('screenshot-modal').style.display = 'flex';
-                    e.preventDefault();
-                }
-            });
 
             // Back button
             document.getElementById('back-btn').onclick = () => {

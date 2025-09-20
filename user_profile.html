@@ -470,6 +470,27 @@
         });
       });
     });
+    if (localStorage.getItem('lang') === 'ru' && localStorage.getItem('bage1') === 'yes' && localStorage.getItem('premium') === 'yes'){
+      document.getElementById('userTitle').textContent = ' 👑Премиум👑\n' + localStorage.getItem('userName');
+      document.getElementById('userTitle').style.whiteSpace = 'pre-line';
+    }
+    else if (localStorage.getItem('lang') === 'en' && localStorage.getItem('bage1') === 'yes' && localStorage.getItem('premium') === 'yes'){
+      document.getElementById('userTitle').textContent = ' 👑Premium👑\n' + localStorage.getItem('userName');
+      document.getElementById('userTitle').style.whiteSpace = 'pre-line';
+    }
+    else{
+      document.getElementById('userTitle').textContent = localStorage.getItem('userName');
+    }
   </script>
+  <script type="text/javascript">
+      document.ondragstart = noselect;
+      document.onselectstart = noselect;
+      document.oncontextmenu = noselect;
+
+      function noselect() {
+          return false;
+      }
+  </script>
+
 </body>
 </html>
