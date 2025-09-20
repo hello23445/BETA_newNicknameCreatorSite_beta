@@ -1363,6 +1363,12 @@ back3.addEventListener('click', () => {
 if (emojiSelect.value === '') {
   decorationSettings.style.display = 'none';
 }
+if (localStorage.getItem('premium') === 'yes'){
+  descriptionInput.maxLength = 1000;
+}
+else{
+  descriptionInput.maxLength = 200;
+}
 </script>
 
 </body>
