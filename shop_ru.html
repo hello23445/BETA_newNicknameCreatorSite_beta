@@ -355,14 +355,22 @@
     <div id="report-modal" class="modal">
         <div class="modal-content">
             <h3>Выберите или введите причину жалобы</h3>
-            <select id="report-reason" style="background-color: black;">
+            <select id="report-reason" style="background-color: darkblue;">
                 <option value="">Выберите причину...</option>
-                <option value="Fraud">Мошенничество</option>
-                <option value="Deception">Обман</option>
-                <option value="Pornography">Порнография</option>
-                <option value="Insult">Оскорбление</option>
-                <option value="Violation of laws">Нарушение законов</option>
-                <option value="Violation of Telegram rules">Нарушение правил Telegram</option>
+                <option value="Мошенничество">Мошенничество</option>
+                <option value="Обман">Обман</option>
+                <option value="Порнография">Порнография</option>
+                <option value="Оскорбление">Оскорбление</option>
+                <option value="Нарушение законов">Нарушение законов</option>
+                <option value="Нарушение правил Telegram">Нарушение правил Telegram</option>
+                <option value="Спам">Спам</option>
+                <option value="Фишинг">Фишинг</option>
+                <option value="Пропаганда насилия">Пропаганда насилия</option>
+                <option value="Расизм или дискриминация">Расизм или дискриминация</option>
+                <option value="Терроризм">Терроризм</option>
+                <option value="Другое">Другое</option>
+                <option value="Не нарушает закон, но надо удалить">Не нарушает закон, но надо удалить</option>
+
             </select>
             <textarea id="report-input" rows="4" placeholder="Опишите проблему (опционально)..."></textarea>
             <button id="submit-report" class="submit-btn">Отправить</button>
@@ -413,8 +421,7 @@
     </div>
     
     <script>
-        const SCRIPT_URL =
-        'https://script.google.com/macros/s/AKfycbwwGJe_rJyoEWMgOIsSwh4OjnCc2Iv621w9VUHaKmUdcqqM5WgXloV16YMKBRQ5twI/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxEcWprN9AVSX4UjmcP0vVW4eYNsOUhH24MB97-mCsA_HH_TxGzT0QPMpqtPMulkgHG/exec';
 
         let currentSeller = null;
         let currentToken = null;
@@ -799,7 +806,7 @@
             const customReason = document.getElementById('report-input').value.trim();
             let reason = '';
             if (selectedReason && customReason) {
-                reason = selectedReason + '&' + customReason;
+                reason = "Выбранная причина: " + selectedReason + '& Введенная причина: ' + customReason;
             } else if (selectedReason) {
                 reason = selectedReason;
             } else if (customReason) {

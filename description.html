@@ -1237,9 +1237,19 @@ generateBtn.addEventListener('click', () => {
 });
 
 next1.addEventListener('click', () => {
-  screen1.classList.remove('active');
-  screen2.classList.add('active');
-  updateResult();
+  if (descriptionInput.value.includes('👑') || descriptionInput.value.includes('Премиум') || descriptionInput.value.includes('Premium')){
+    if(confirm('Описание содержит запрещённые слова. Пожалуйста, измените описание нажав на "Отмена" или нажмите "Ок" чтобы убрать автоматически.')){
+      descriptionInput.value = descriptionInput.value.replace(/👑/g, '').replace(/Премиум/g, '').replace(/Premium/g, '');
+      next1.disabled = 'true';
+      return;
+    }
+    return;
+  }
+  else{
+    screen1.classList.remove('active');
+    screen2.classList.add('active');
+    updateResult();
+  }
 });
 
 document.getElementById('next2').addEventListener('click', () => {

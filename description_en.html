@@ -1159,9 +1159,19 @@ generateBtn.addEventListener('click', () => {
 });
 
 next1.addEventListener('click', () => {
-  screen1.classList.remove('active');
-  screen2.classList.add('active');
-  updateResult();
+  if (descriptionInput.value.includes('👑') || descriptionInput.value.includes('Premium') || descriptionInput.value.includes('Premium')) {
+    if (confirm('The description contains forbidden words. Please change the description by clicking "Cancel" or click "OK" to remove them automatically.')) {
+      descriptionInput.value = descriptionInput.value.replace(/👑/g, '').replace(/Premium/g, '').replace(/Premium/g, '');
+      next1.disabled = 'true';
+      return;
+    }
+    return;
+  }
+  else {
+    screen1.classList.remove('active');
+    screen2.classList.add('active');
+    updateResult();
+  }
 });
 
 document.getElementById('next2').addEventListener('click', () => {
