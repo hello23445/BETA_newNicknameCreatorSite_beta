@@ -93,7 +93,9 @@
   </div>
 
   <script type="module">
-
+    if (localStorage.getItem('msg')){
+      alert(localStorage.getItem('msg') || ''); // Показываем сообщение о плохом соединении, если есть
+    }
     if (window.Telegram && Telegram.WebApp) {
       Telegram.WebApp.ready();
       Telegram.WebApp.expand();

@@ -346,15 +346,7 @@
 
 
 
-<!-- Плохое интернет-соединение -->
-<div id="no-connection" style="display:none;"></div>
-    <script>
-        if (localStorage.getItem('msg')){
-            document.getElementById('no-connection').textContent = localStorage.getItem('msg') || ''
-            localStorage.removeItem('msg');
-            document.getElementById('no-connection').style.display = 'block';
-        }
-    </script>
+
     <!-- Техническое обслуживание -->
     <div id="maintenance">
         <h2 data-translate="maintenance" id="maintenanceM"></h2>
