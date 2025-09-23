@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shop</title>
+    <title>Store</title>
     <style>
         body {
             background-color: darkblue;
@@ -332,9 +332,9 @@
 </head>
 <body>
     <div id="header">
-        <button id="back-btn">BACK TO MAIN MENU</button>
+        <button id="back-btn">RETURN TO MAIN MENU</button>
         <div id="title-container">
-            <div id="title">Shop</div>
+            <div id="title">Store</div>
             <div id="timer"></div>
         </div>
         <div id="coins"></div>
@@ -354,17 +354,25 @@
     <!-- Report modal -->
     <div id="report-modal" class="modal">
         <div class="modal-content">
-            <h3>Select or Enter Report Reason</h3>
-            <select id="report-reason" style="background-color: black;">
+            <h3>Select or enter the reason for the report</h3>
+            <select id="report-reason" style="background-color: darkblue;">
                 <option value="">Select reason...</option>
                 <option value="Fraud">Fraud</option>
                 <option value="Deception">Deception</option>
                 <option value="Pornography">Pornography</option>
                 <option value="Insult">Insult</option>
-                <option value="Violation of laws">Violation of laws</option>
-                <option value="Violation of Telegram rules">Violation of Telegram rules</option>
+                <option value="Law Violation">Law Violation</option>
+                <option value="Telegram Rules Violation">Telegram Rules Violation</option>
+                <option value="Spam">Spam</option>
+                <option value="Phishing">Phishing</option>
+                <option value="Violence Propaganda">Violence Propaganda</option>
+                <option value="Racism or Discrimination">Racism or Discrimination</option>
+                <option value="Terrorism">Terrorism</option>
+                <option value="Other">Other</option>
+                <option value="Does not violate law, but needs to be removed">Does not violate law, but needs to be removed</option>
+
             </select>
-            <textarea id="report-input" rows="4" placeholder="Describe the issue (optional)..."></textarea>
+            <textarea id="report-input" rows="4" placeholder="Describe the problem (optional)..."></textarea>
             <button id="submit-report" class="submit-btn">Submit</button>
             <button id="cancel-report" class="cancel-btn">Cancel</button>
         </div>
@@ -382,7 +390,7 @@
     <!-- Insufficient modal -->
     <div id="insufficient-modal" class="modal">
         <div class="modal-content">
-            <p id="insufficient-text">Insufficient coins!<br>You can earn coins by generating something in this app.</p>
+            <p id="insufficient-text">Insufficient coins!<br>You can get coins by generating something in this app.</p>
             <button id="close-insufficient" class="close-btn">OK</button>
         </div>
     </div>
@@ -404,14 +412,6 @@
         </div>
     </div>
     
-    <!-- Screenshot modal -->
-    <div id="screenshot-modal" class="modal">
-        <div class="modal-content">
-            <p id="screenshot-text">Screenshots are prohibited!</p>
-            <button id="close-screenshot" class="close-btn">OK</button>
-        </div>
-    </div>
-    
     <!-- Scam modal -->
     <div id="scam-modal" class="modal">
         <div class="modal-content">
@@ -421,7 +421,7 @@
     </div>
     
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbztp4l-4m29QisFNyiFm7PYVZQt0gN4i31LdnYCqCBo-M5IHvMIO_OWY0cL047FcreB/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxEcWprN9AVSX4UjmcP0vVW4eYNsOUhH24MB97-mCsA_HH_TxGzT0QPMpqtPMulkgHG/exec';
 
         let currentSeller = null;
         let currentToken = null;
@@ -459,6 +459,7 @@
             const container = document.getElementById('container');
             container.innerHTML = '';
             const userName = localStorage.getItem('userName') || '';
+            const userToken = localStorage.getItem('userToken') || '';
             let hasProducts = false;
             rows.forEach((row, index) => {
                 if (index === 0) return; // Skip header
@@ -474,12 +475,15 @@
                 let qty = parseInt(row[10]);
                 qty = isNaN(qty) ? 1 : Math.max(0, qty);
 
+                if (token === userToken) return; // Hide own products
+
                 const isAvailable = (status === 'Listed' || status === 'Выставлен') && qty > 0;
-                if (!isAvailable) return; // Do not show bought products
+
+                if (!isAvailable && buyer !== userName) return; // Do not show bought products unless bought by user
 
                 hasProducts = true;
 
-                const isPremium = name === "Premium";
+                const isPremium = name === "\"👑Premium\" badge for profile";
                 const isScam = isPremium && seller !== "Anonymous" && seller !== "Premium Seller";
 
                 const card = document.createElement('div');
@@ -489,6 +493,7 @@
                 card.dataset.price = price;
                 card.dataset.status = status;
                 card.dataset.buyer = buyer;
+                card.dataset.token = token;
                 card.innerHTML = `
                     <p><strong>Seller:</strong> ${seller}</p>
                     <h3>${name}</h3>
@@ -514,12 +519,12 @@
                         }
                     };
                 } else {
-                    buyBtn.textContent = `Bought for ${price}🪙`;
+                    buyBtn.textContent = `Purchased for ${price}🪙`;
                     buyBtn.disabled = true;
                 }
                 card.appendChild(buyBtn);
 
-                if (!isAvailable && buyer === userName) {
+                if (buyer === userName) {
                     const copyBtn = document.createElement('button');
                     copyBtn.className = 'copy-btn';
                     copyBtn.textContent = 'Copy';
@@ -553,8 +558,8 @@
                 const emptyDiv = document.createElement('div');
                 emptyDiv.id = 'empty-message';
                 emptyDiv.innerHTML = `
-                    <p>The shop is empty! Start selling your product!</p>
-                    <button onclick="window.location.href='myshop_en.html'">Go to my shop</button>
+                    <p>The store is empty! Start selling your product!</p>
+                    <button onclick="window.location.href='myshop_en.html'">Go to my store</button>
                 `;
                 container.appendChild(emptyDiv);
             }
@@ -566,8 +571,30 @@
                 document.getElementById('insufficient-modal').style.display = 'flex';
                 return;
             }
+            const userToken = localStorage.getItem('userToken') || '';
+            const sellerToken = card.dataset.token;
+            if (sellerToken === userToken) {
+                showMessage("You cannot buy your own product!");
+                return;
+            }
+            const isSpecial = name === "Premium" || name === "\"👑Premium\" badge for profile";
+            if (!isSpecial) {
+                const boughtItems = (localStorage.getItem('bought') || '').split(',');
+                if (boughtItems.includes(name)) {
+                    showMessage("This product is already in the list of purchased items!");
+                    return;
+                }
+            }
             if (name === "Premium" && localStorage.getItem('premium') === 'yes') {
                 showMessage("You already have premium!");
+                return;
+            }
+            if (name === "\"👑Premium\" badge for profile" && localStorage.getItem('premium') !== 'yes') {
+                showMessage("You don't have premium to buy this badge!");
+                return;
+            }
+            if (name === "\"👑Premium\" badge for profile" && localStorage.getItem('badge1') === 'yes') {
+                showMessage("You already have this badge!");
                 return;
             }
             showConfirmModal(rowIndex, price, name, card);
@@ -624,9 +651,9 @@
                         qty--;
                         card.dataset.qty = qty;
                         if (qty <= 0) {
-                            card.dataset.status = 'Bought';
+                            card.dataset.status = 'Purchased';
                             card.dataset.buyer = userName;
-                            buyBtn.textContent = 'Bought';
+                            buyBtn.textContent = 'Purchased';
                             buyBtn.disabled = true;
                             const copyBtn = document.createElement('button');
                             copyBtn.className = 'copy-btn';
@@ -641,15 +668,24 @@
                             buyBtn.textContent = `Buy 1/${qty} for ${currentPrice}`;
                         }
                     }
-                    if (currentName !== "Premium") {
+                    const isBadge = currentName === "\"👑Premium\" badge for profile";
+                    const isPremium = currentName === "Premium";
+                    if (!isBadge && !isPremium) {
                         let bought = localStorage.getItem('bought') || '';
                         bought += (bought ? ',' : '') + currentName;
                         localStorage.setItem('bought', bought);
                     }
-                    if (currentName === "Premium") {
+                    if (isPremium) {
                         localStorage.setItem('premium', 'yes');
                     }
-                    showMessage("Purchased!\nThe product has been added to your favorites list.\nPremium is credited immediately and not added to the purchases list.");
+                    if (isBadge) {
+                        localStorage.setItem('badge1', 'yes');
+                    }
+                    if (isPremium) {
+                        showMessage("Premium successfully purchased!");
+                    } else {
+                        showMessage("Purchased!\n Sent to your list of favorite purchases.\nThe \"Premium\" product is not sent to the purchase list, but is credited immediately.");
+                    }
                     setTimeout(() => fetchData(true), 1000);
                 } else {
                     showMessage('Purchase error: ' + result);
@@ -674,10 +710,11 @@
 
         function initNextUpdateTime() {
             let savedTime = localStorage.getItem('nextUpdateTime');
+            const updateInterval = localStorage.getItem('premium') === 'yes' ? 60000 : 120000;
             if (savedTime && parseInt(savedTime) > Date.now()) {
                 nextUpdateTime = parseInt(savedTime);
             } else {
-                nextUpdateTime = Date.now() + 120000;
+                nextUpdateTime = Date.now() + updateInterval;
                 localStorage.setItem('nextUpdateTime', nextUpdateTime);
             }
         }
@@ -685,9 +722,10 @@
         function updateTimer() {
             const now = Date.now();
             const diff = nextUpdateTime - now;
+            const updateInterval = localStorage.getItem('premium') === 'yes' ? 60000 : 120000;
             if (diff <= 0) {
                 fetchData(true);
-                nextUpdateTime = now + 120000;
+                nextUpdateTime = now + updateInterval;
                 localStorage.setItem('nextUpdateTime', nextUpdateTime);
                 setTimeout(updateTimer, 1000);
                 return;
@@ -701,16 +739,9 @@
             fetch(`${SCRIPT_URL}?op=get`)
                 .then(res => res.json())
                 .then(newData => {
-                    const oldData = JSON.parse(localStorage.getItem('shopData')) || [];
-                    let hasChanges = false;
-                    newData.forEach((row, index) => {
-                        if (index === 0) return;
-                        const oldRow = oldData[index];
-                        if (oldRow && (row[1] !== oldRow[1] || parseFloat(row[4]) !== parseFloat(oldRow[4]))) {
-                            hasChanges = true;
-                        }
-                    });
-                    if (hasChanges) {
+                    const oldDataStr = localStorage.getItem('shopData') || '[]';
+                    const oldData = JSON.parse(oldDataStr);
+                    if (JSON.stringify(newData) !== JSON.stringify(oldData)) {
                         displayProducts(newData);
                         localStorage.setItem('shopData', JSON.stringify(newData));
                     }
@@ -730,12 +761,12 @@
             content.innerHTML = '';
             
             const items = [
-                {label: 'Listing Date', value: currentDate},
+                {label: 'Posting Date', value: currentDate},
                 {label: 'Seller', value: currentSeller},
                 {label: 'Product', value: currentName},
                 {label: 'Price', value: currentPrice},
                 {label: 'Description', value: currentDesc},
-                {label: 'Quantity', value: currentQty}
+                {label: 'Remaining:', value: currentQty}
             ];
             
             items.forEach(item => {
@@ -774,11 +805,10 @@
             const selectedReason = document.getElementById('report-reason').value.trim();
             const customReason = document.getElementById('report-input').value.trim();
             let reason = '';
-            if (selectedReason) {
+            if (selectedReason && customReason) {
+                reason = "Selected reason: " + selectedReason + '& Entered reason: ' + customReason;
+            } else if (selectedReason) {
                 reason = selectedReason;
-                if (customReason) {
-                    reason += ': ' + customReason;
-                }
             } else if (customReason) {
                 reason = customReason;
             }
@@ -795,7 +825,10 @@
                     reporterToken: userToken,
                     reason: reason,
                     seller: currentSeller,
-                    sellerToken: currentToken
+                    sellerToken: currentToken,
+                    product: currentName,
+                    price: currentPrice,
+                    date: currentDate
                 };
                 fetch(SCRIPT_URL, {
                     method: 'POST',
@@ -803,12 +836,12 @@
                 })
                 .then(res => res.text())
                 .then(() => {
-                    showMessage('Report sent.');
+                    showMessage('Report submitted.');
                     document.getElementById('report-modal').style.display = 'none';
                 })
                 .catch(err => console.error(err));
             } else {
-                showMessage('Select or enter a report reason!');
+                showMessage('Select or enter the reason for the report!');
             }
         };
 
@@ -830,11 +863,6 @@
         // Close message
         document.getElementById('close-message').onclick = () => {
             document.getElementById('message-modal').style.display = 'none';
-        };
-
-        // Close screenshot
-        document.getElementById('close-screenshot').onclick = () => {
-            document.getElementById('screenshot-modal').style.display = 'none';
         };
 
         // Close scam
@@ -863,14 +891,6 @@
             document.addEventListener('copy', event => event.preventDefault());
             document.addEventListener('cut', event => event.preventDefault());
             document.addEventListener('dragstart', event => event.preventDefault());
-
-            // Detect PrintScreen
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'PrintScreen') {
-                    document.getElementById('screenshot-modal').style.display = 'flex';
-                    e.preventDefault();
-                }
-            });
 
             // Back button
             document.getElementById('back-btn').onclick = () => {
