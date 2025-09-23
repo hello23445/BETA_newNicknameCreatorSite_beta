@@ -430,7 +430,7 @@
             const slot = window.selectedSlot;
             if (!item) { alert('Нет выбранного товара'); return; }
             const maxDesc = premium ? 25 : 20;
-            const minPrice = 0;
+            const minPrice = 5;
 
             const container = document.createElement('div');
             container.appendChild(createTextElement('h2', 'Настроить товар'));
@@ -467,7 +467,13 @@
                 const priceVal = priceInput.value;
                 if (priceVal === '') { alert('Введите цену'); hideLoading(); return; }
                 const price = parseInt(priceVal, 10);
-                if (isNaN(price) || price < 0 || price > 200) { alert('Цена должна быть от 0 до 200 монет'); hideLoading(); return; }
+                if (isNaN(price) || price < 5 || price > 200) { alert('Цена должна быть от 5 до 200 монет'); hideLoading(); return; }
+
+                if (item.name.includes('[') || item.name.includes('{')) {
+                    alert('Нельзя продавать товары с символами [ или {');
+                    hideLoading();
+                    return;
+                }
 
                 let claimedSold = safeParseJSON('claimedSold', []);
                 const claimedSoldSet = new Set(claimedSold);
@@ -551,18 +557,37 @@
         }
 
         async function removeProd(slot) {
-            showLoading();
             try {
                 const p = products.find(x => x.slot === slot);
-                if (!p || !premium) { hideLoading(); return; }
-                if (confirm('Убрать товар с площадки?')) {
+                if (!p || !premium) { return; }
+
+                const confirmed = await new Promise((resolve) => {
+                    const container = document.createElement('div');
+                    container.appendChild(createTextElement('h2', 'Подтверждение удаления'));
+                    container.appendChild(createTextElement('p', 'Убрать товар с площадки?'));
+
+                    const yesBtn = document.createElement('button');
+                    yesBtn.textContent = 'Да';
+                    yesBtn.onclick = () => { closeModal(); resolve(true); };
+
+                    const noBtn = document.createElement('button');
+                    noBtn.textContent = 'Нет';
+                    noBtn.onclick = () => { closeModal(); resolve(false); };
+
+                    container.appendChild(yesBtn);
+                    container.appendChild(noBtn);
+
+                    showModal(container);
+                });
+
+                if (confirmed) {
+                    showLoading();
                     const params = { mode: 'delete', C: userToken, I: slot.toString() };
                     await saveToSheet(params);
                     products = products.filter(x => x.slot !== slot);
                     discountedSlots.delete(slot);
                     localStorage.setItem('discountedSlots', JSON.stringify(Array.from(discountedSlots)));
                     localStorage.setItem('products', JSON.stringify(products));
-                    closeModal();
                     renderGrid();
                     manageRefresh();
                 }
@@ -585,7 +610,7 @@
 
             const label = document.createElement('label');
             label.textContent = 'Процент скидки: ';
-            const range = document.createElement('input'); range.type = 'range'; range.id = 'discount-percent'; range.min = 5; range.max = 50; range.step = 5; range.value = percent;
+            const range = document.createElement('input'); range.type = 'range'; range.id = 'discount-percent'; range.min = 5; range.max = premium ? 75 : 50; range.step = 5; range.value = percent;
             label.appendChild(range);
             container.appendChild(label);
 
@@ -643,6 +668,8 @@
                 const remBtn = document.createElement('button'); remBtn.textContent = 'Убрать товар (премиум)'; remBtn.onclick = () => removeProd(slot);
                 container.appendChild(remBtn);
                 container.appendChild(document.createElement('br'));
+            } else {
+                container.appendChild(createTextElement('p', 'Удалить товар можно только с Премиум!'));
             }
 
             if (discountsLeft > 0 && p.price > 1 && !isDiscounted) {

@@ -173,6 +173,7 @@
     <div class="buttons">
       <button id="nick" onclick="window.location.href = 'nicks.html'"></button>
       <button id="desc" onclick="window.location.href = 'descs.html'"></button>
+      <button id="bought" onclick="window.location.href = 'bought.html'"></button>
       <button id="main" onclick="window.location.href = 'main.html'"></button>
     </div>
   </div>
@@ -181,12 +182,14 @@
     const lang = localStorage.getItem('lang');
     const texts = {
       ru: {
+        bought: 'Список избранных покупок',
         nick: 'Список избранных никнеймов',
         desc: 'Список избранных описаний',
         choose: 'Выберите список.',
         main: 'Вернуться в главное меню'
       },
       en: {
+        bought: 'Favorite purchases list',
         nick: 'Favorite nicknames list',
         desc: 'Favorite descriptions list',
         choose: 'Select a list.',
@@ -197,6 +200,7 @@
     const t = texts[lang] || texts.en;
     document.getElementById('nick').textContent = t.nick;
     document.getElementById('desc').textContent = t.desc;
+    document.getElementById('bought').textContent = t.bought;
     document.getElementById('choose').textContent = t.choose;
     document.getElementById('main').textContent = t.main;
   </script>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shop</title>
+    <title>Store</title>
     <style>
         :root {
             --bg: #0f0f23;
@@ -153,16 +153,45 @@
     <div id="preloader">Loading...</div>
     <div id="loading">Loading...</div>
     <header>
-        <button style="background-color: darkblue;" onclick="window.location.href = 'main.html'">Back to main menu</button>
-        <h1>My Shop</h1>
+        <button style="background-color: darkblue;" onclick="window.location.href = 'main.html'">Return to main menu</button>
+        <h1>My Store</h1>
         <p>Coins: <span id="coins-display">...</span> | Premium: <span id="premium-display">No</span> | Discounts: <span id="discounts-display">...</span></p>
     </header>
     <div id="product-grid"></div>
 
     <script>
-
         // Variables for GAS and Google Sheets
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbzWMD_I-F3O0EHGYypQrszNyub1KAJGH5HL7w04gG26i-1XeESk4TC3p2dIODdpW1sY/exec'; // Replace with your GAS web app ID
+
+        function refillDailyDiscountsPremium() {
+            const today = new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"
+            const lastRefill = localStorage.getItem('lastDiscountRefill');
+
+            if (lastRefill !== today) {
+                // Check premium
+                const isPremium = localStorage.getItem('premium') === 'yes'; // now premium is stored as 'yes'
+
+                // Select refill amount
+                const amount = isPremium ? 10 : 2;
+
+                // Get current discountsLeft (or 0 if none)
+                let discountsLeft = parseInt(localStorage.getItem('discountsLeft'), 10) || 0;
+
+                // Refill
+                discountsLeft = amount;
+
+                // Save new value and date
+                localStorage.setItem('discountsLeft', discountsLeft);
+                localStorage.setItem('lastDiscountRefill', today);
+
+                console.log(`Refill completed: now discountsLeft = ${discountsLeft}`);
+            } else {
+                console.log('Refill already done today.');
+            }
+        }
+
+        // Call on page load
+        refillDailyDiscountsPremium();
 
         // Helper functions
         function safeParseJSON(key, fallback) {
@@ -175,37 +204,6 @@
                 return fallback;
             }
         }
-
-        function refillDailyDiscountsPremium() {
-            const today = new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"
-            const lastRefill = localStorage.getItem('lastDiscountRefill');
-
-            if (lastRefill !== today) {
-                // Проверяем премиум
-                const isPremium = localStorage.getItem('premium') === 'yes'; // теперь премиум хранится как 'yes'
-
-                // Выбираем количество пополнения
-                const amount = isPremium ? 10 : 2;
-
-                // Получаем текущее значение discountsLeft (или 0, если нет)
-                let discountsLeft = parseInt(localStorage.getItem('discountsLeft'), 10) || 0;
-
-                // Пополняем
-                discountsLeft = amount;
-
-                // Сохраняем новое значение и дату
-                localStorage.setItem('discountsLeft', discountsLeft);
-                localStorage.setItem('lastDiscountRefill', today);
-
-                console.log(`Пополнение выполнено: now discountsLeft = ${discountsLeft}`);
-            } else {
-                console.log('Пополнение сегодня уже выполнено.');
-            }
-        }
-
-        // Вызываем при загрузке страницы
-        refillDailyDiscountsPremium();
-
 
         function loadArrayFromStorage(key, fallback = []) {
             const raw = localStorage.getItem(key);
@@ -430,9 +428,9 @@
         function showSetModal() {
             const item = window.selectedItem;
             const slot = window.selectedSlot;
-            if (!item) { alert('No product selected'); return; }
+            if (!item) { alert('No selected product'); return; }
             const maxDesc = premium ? 25 : 20;
-            const minPrice = 0;
+            const minPrice = 5;
 
             const container = document.createElement('div');
             container.appendChild(createTextElement('h2', 'Configure Product'));
@@ -469,7 +467,13 @@
                 const priceVal = priceInput.value;
                 if (priceVal === '') { alert('Enter price'); hideLoading(); return; }
                 const price = parseInt(priceVal, 10);
-                if (isNaN(price) || price < 0 || price > 200) { alert('Price must be from 0 to 200 coins'); hideLoading(); return; }
+                if (isNaN(price) || price < 5 || price > 200) { alert('Price must be from 5 to 200 coins'); hideLoading(); return; }
+
+                if (item.name.includes('[') || item.name.includes('{')) {
+                    alert('Cannot sell products with symbols [ or {');
+                    hideLoading();
+                    return;
+                }
 
                 let claimedSold = safeParseJSON('claimedSold', []);
                 const claimedSoldSet = new Set(claimedSold);
@@ -553,18 +557,37 @@
         }
 
         async function removeProd(slot) {
-            showLoading();
             try {
                 const p = products.find(x => x.slot === slot);
-                if (!p || !premium) { hideLoading(); return; }
-                if (confirm('Remove product from marketplace?')) {
+                if (!p || !premium) { return; }
+
+                const confirmed = await new Promise((resolve) => {
+                    const container = document.createElement('div');
+                    container.appendChild(createTextElement('h2', 'Delete Confirmation'));
+                    container.appendChild(createTextElement('p', 'Remove product from the platform?'));
+
+                    const yesBtn = document.createElement('button');
+                    yesBtn.textContent = 'Yes';
+                    yesBtn.onclick = () => { closeModal(); resolve(true); };
+
+                    const noBtn = document.createElement('button');
+                    noBtn.textContent = 'No';
+                    noBtn.onclick = () => { closeModal(); resolve(false); };
+
+                    container.appendChild(yesBtn);
+                    container.appendChild(noBtn);
+
+                    showModal(container);
+                });
+
+                if (confirmed) {
+                    showLoading();
                     const params = { mode: 'delete', C: userToken, I: slot.toString() };
                     await saveToSheet(params);
                     products = products.filter(x => x.slot !== slot);
                     discountedSlots.delete(slot);
                     localStorage.setItem('discountedSlots', JSON.stringify(Array.from(discountedSlots)));
                     localStorage.setItem('products', JSON.stringify(products));
-                    closeModal();
                     renderGrid();
                     manageRefresh();
                 }
@@ -587,7 +610,7 @@
 
             const label = document.createElement('label');
             label.textContent = 'Discount Percentage: ';
-            const range = document.createElement('input'); range.type = 'range'; range.id = 'discount-percent'; range.min = 5; range.max = 50; range.step = 5; range.value = percent;
+            const range = document.createElement('input'); range.type = 'range'; range.id = 'discount-percent'; range.min = 5; range.max = premium ? 75 : 50; range.step = 5; range.value = percent;
             label.appendChild(range);
             container.appendChild(label);
 
@@ -642,9 +665,11 @@
             container.appendChild(createTextElement('h2', `Management: ${p.name}`));
 
             if (premium) {
-                const remBtn = document.createElement('button'); remBtn.textContent = 'Remove Product (premium)'; remBtn.onclick = () => removeProd(slot);
+                const remBtn = document.createElement('button'); remBtn.textContent = 'Remove Product (Premium)'; remBtn.onclick = () => removeProd(slot);
                 container.appendChild(remBtn);
                 container.appendChild(document.createElement('br'));
+            } else {
+                container.appendChild(createTextElement('p', 'Remove product only with Premium!'));
             }
 
             if (discountsLeft > 0 && p.price > 1 && !isDiscounted) {
@@ -652,7 +677,7 @@
                 container.appendChild(discBtn); container.appendChild(document.createElement('br'));
             } else {
                 if (discountsLeft <= 0) container.appendChild(createTextElement('p', 'Discounts exhausted'));
-                else if (p.price <= 1) container.appendChild(createTextElement('p', 'Discount unavailable for price 1'));
+                else if (p.price <= 1) container.appendChild(createTextElement('p', 'Discount not available for price 1'));
                 else if (isDiscounted) container.appendChild(createTextElement('p', 'Discount already applied'));
             }
 
@@ -672,10 +697,10 @@
                 const slotEl = document.createElement('div'); slotEl.className = 'slot';
                 const p = products.find(x => x.slot === i);
 
-                if (!p || (p.status === 'Sold' && claimedSoldSet.has(p.key))) {
+                if (!p || (p.status === 'Purchased' && claimedSoldSet.has(p.key))) {
                     const btn = document.createElement('button'); btn.textContent = '+Add Product'; btn.onclick = () => showAddModal(i);
                     slotEl.appendChild(btn);
-                } else if (p.status === 'Sold') {
+                } else if (p.status === 'Purchased') {
                     const card = document.createElement('div'); card.className = 'sold-card';
                     card.textContent = `${p.name}\n${p.desc}\n+${p.price} coins\n${p.buyer || ''}`;
                     card.onclick = () => claimCoins(p);
@@ -737,7 +762,7 @@
                     let activeProduct = null;
                     for (let record of records) {
                         const key = unicodeBtoa(`${record.C}_${record.D}_${record.E}_${record.F}`);
-                        if (record.G === 'Listed' || (record.G === 'Sold' && !claimedSoldSet.has(key))) {
+                        if (record.G === 'Listed' || (record.G === 'Purchased' && !claimedSoldSet.has(key))) {
                             activeProduct = {
                                 slot: slot,
                                 name: record.D || '',
@@ -762,7 +787,7 @@
                 if (Array.isArray(localProducts)) {
                     for (let lp of localProducts) {
                         if (!slotRecords.has(lp.slot) &&
-                            (lp.status === 'Listed' || (lp.status === 'Sold' && !claimedSoldSet.has(lp.key)))) {
+                            (lp.status === 'Listed' || (lp.status === 'Purchased' && !claimedSoldSet.has(lp.key)))) {
                             products.push(lp);
                         }
                     }

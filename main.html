@@ -274,7 +274,7 @@
             z-index: 10;
         }
         /* 20 уникальных тыкв */
-        .p1  { left: 5%;  animation-duration: 3s; animation-delay: 0s; }
+        .p1  { left: 20%;  animation-duration: 12s; animation-delay: 0s; }
         .p2  { left: 10%; animation-duration: 15s; animation-delay: 2s; }
         .p3  { left: 15%; animation-duration: 18s; animation-delay: 4s; }
         .p4  { left: 20%; animation-duration: 14s; animation-delay: 1s; }
@@ -313,14 +313,14 @@
 <body>
     <!-- хеллоуин -->
 <!-- Жуткий туман -->
-<div class="fog"></div>
+<!-- <div class="fog"></div> -->
 
 <!-- CSS облака -->
 <div class="cloud"></div>
 <div class="cloud cloud2"></div>
 
 <!-- Падающие тыквы -->
-<img src="https://png.pngtree.com/png-clipart/20230814/original/pngtree-illustration-of-scary-halloween-pumpkin-picture-image_7938109.png" class="pumpkin p1" onclick="secret()" style="width: 100px; pointer-events: all;" id="p1">
+<img src="https://png.pngtree.com/png-clipart/20230814/original/pngtree-illustration-of-scary-halloween-pumpkin-picture-image_7938109.png" class="pumpkin p1" onclick="secret()" style="width: 60px; pointer-events: all;" id="p1">
 <img src="https://png.pngtree.com/png-clipart/20230814/original/pngtree-illustration-of-scary-halloween-pumpkin-picture-image_7938109.png" class="pumpkin p3">
 
 
@@ -346,7 +346,15 @@
 
 
 
-
+<!-- Плохое интернет-соединение -->
+<div id="no-connection" style="display:none;"></div>
+    <script>
+        if (localStorage.getItem('msg')){
+            document.getElementById('no-connection').textContent = localStorage.getItem('msg') || ''
+            localStorage.removeItem('msg');
+            document.getElementById('no-connection').style.display = 'block';
+        }
+    </script>
     <!-- Техническое обслуживание -->
     <div id="maintenance">
         <h2 data-translate="maintenance" id="maintenanceM"></h2>
@@ -470,6 +478,9 @@
 
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
     <script>
+        if (!localStorage.getItem('userName')) {
+            localStorage.setItem('userName', 'User');
+        }
         function secret() {
             const a1 = Math.floor(Math.random() * 6) + 1;
             if (a1 === 4 || a1 === 5) {
