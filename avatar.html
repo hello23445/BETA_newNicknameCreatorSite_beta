@@ -91,6 +91,7 @@
       width: 100%;
       touch-action: manipulation;
       transition: background 0.2s;
+      z-index: 10; /* Ensure button is clickable */
     }
     #hideToolsButton:hover, #openToolsButton:hover, #shareTelegramBtn:hover {
       background: darkred;
@@ -117,6 +118,15 @@
       padding: 2vw;
       font-size: 4vw;
       box-sizing: border-box;
+    }
+    .tools input[type="color"] {
+      height: 8vw; /* Fixed height to prevent stretching */
+      padding: 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
     }
     .btn-remove {
       display: inline-block;
@@ -341,6 +351,10 @@
         font-size: 16px;
         padding: 10px;
       }
+      .tools input[type="color"] {
+        height: 40px; /* Fixed height for desktop */
+        width: 60px; /* Constrain width */
+      }
       #orientation-warning p, #video-modal p {
         font-size: 16px;
       }
@@ -385,6 +399,10 @@
       .tools textarea {
         font-size: 3.5vw;
         padding: 1.5vw;
+      }
+      .tools input[type="color"] {
+        height: 6vw; /* Smaller height for small screens */
+        width: 20vw; /* Constrain width */
       }
       #customShapeModal canvas {
         width: 80vw;
@@ -550,7 +568,7 @@
   </div>
 
   <script>
-    const tg = window.Telegram.WebApp;
+    const tg = window.Telegram?.WebApp;
 
     /* ========= 0. Проверка ориентации устройства ========= */
     function checkOrientationWarning() {
@@ -633,6 +651,12 @@
         uploadOpt.disabled = true;
         uploadOpt.textContent = 'ЗАГРУЗИТЬ ШРИФТ (Не доступно)';
       }
+      if (!tg) {
+        console.error('Telegram WebApp SDK не инициализирован');
+        alert('Ошибка: Telegram WebApp SDK не загружен. Пожалуйста, откройте приложение через Telegram.');
+      } else {
+        console.log('Telegram WebApp SDK инициализирован:', tg);
+      }
     });
 
     /* ========= 6. Обработка показа/скрытия панели инструментов ========= */
@@ -652,17 +676,23 @@
 
     /* ========= 7. Telegram Sharing ========= */
     shareTelegramBtn.addEventListener('click', () => {
+      console.log('Нажата кнопка "Поделиться в Telegram"');
+      if (!tg) {
+        console.error('Telegram WebApp SDK не доступен');
+        alert('Ошибка: Telegram WebApp SDK не доступен. Откройте приложение через Telegram.');
+        return;
+      }
       if (bgVideo) {
+        console.log('Попытка отправки видео, которое не поддерживается');
         alert('Видео-аватарки нельзя отправить в Telegram. Пожалуйста, используйте статическое изображение.');
         return;
       }
-      const caption = textInput.value.slice(0, 200) || 'Моя аватарка'; // Limit caption to 200 chars
       const shareCanvas = document.createElement('canvas');
-      const shareSize = 128; // Reduced size for Telegram
+      const shareSize = 64; // Further reduced size
       shareCanvas.width = shareSize;
       shareCanvas.height = shareSize;
       const shareCtx = shareCanvas.getContext('2d');
-      
+
       // Redraw avatar on smaller canvas
       shareCtx.save();
       applyShapeClip(shareCtx, shareSize, shapeSelect.value);
@@ -690,7 +720,7 @@
         shareCtx.restore();
       }
 
-      const txt = textInput.value.slice(0, 200); // Limit text for drawing
+      const txt = textInput.value.slice(0, 100); // Limit text to 100 chars
       if (txt.trim() !== "") {
         shareCtx.save();
         const lines = txt.split("\n");
@@ -708,11 +738,12 @@
         shareCtx.restore();
       }
 
-      const dataUrl = shareCanvas.toDataURL('image/jpeg', 0.5); // Lower quality
-      const data = JSON.stringify({ photo: dataUrl, text: caption });
+      const dataUrl = shareCanvas.toDataURL('image/jpeg', 0.4); // Even lower quality
+      const data = JSON.stringify({ photo: dataUrl }); // Simplified payload
+      console.log('Размер данных для отправки:', data.length, 'байт');
       if (data.length > 64000) {
-        alert('Ошибка: Изображение слишком большое для отправки в Telegram. Попробуйте уменьшить текст, убрать изображение или использовать более простую форму.');
-        // Fallback: Offer to download the image
+        console.warn('Данные слишком большие:', data.length);
+        alert('Ошибка: Изображение слишком большое для отправки в Telegram. Попробуйте уменьшить текст или убрать изображение.');
         const link = document.createElement('a');
         link.href = dataUrl;
         link.download = 'avatar.jpg';
@@ -720,9 +751,12 @@
         return;
       }
       try {
+        console.log('Отправка данных через tg.sendData');
         tg.sendData(data);
+        console.log('Данные успешно отправлены');
       } catch (e) {
-        alert(`Ошибка отправки в Telegram: ${e.message || 'Данные слишком большие. Попробуйте уменьшить текст или использовать более простое изображение.'}`);
+        console.error('Ошибка при отправке данных:', e);
+        alert(`Ошибка отправки в Telegram: ${e.message || 'Не удалось отправить данные. Попробуйте уменьшить текст или изображение.'}`);
       }
     });
 
