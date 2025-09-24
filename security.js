@@ -29,7 +29,7 @@ function checkInternetConnection() {
     const connection = navigator.connection;
     const speed = connection.downlink || null; // Мбит/с
     // Плохое соединение, если < 10 Мбит/с
-    if (speed !== null && speed < 1220) {
+    if (speed !== null && speed < 10) {
       localStorage.setItem('msg', `Плохое интернет-соединение (${speed} Мбит/с). Некоторые элементы могут не отображаться.\n\nPoor internet connection (${speed} Mbps). Some elements may not load.`)
       return true; // есть проблемы
     }
