@@ -2,33 +2,31 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Генератор Аватарки</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
+    /* Общие стили */
     * {
       user-select: none;
-      box-sizing: border-box;
     }
     body {
       margin: 0;
       padding: 0;
       font-family: Arial, sans-serif;
       background: linear-gradient(135deg, #74ABE2, #5563DE);
-      min-height: 100vh;
+      height: 100vh;
       overflow: hidden;
       display: flex;
       justify-content: center;
       align-items: center;
-      touch-action: manipulation;
     }
     .container {
       display: flex;
-      flex-direction: column;
-      width: 100%;
-      height: 100vh;
+      width: 90%;
+      max-width: 1200px;
+      height: 90%;
       box-shadow: 0 0 20px rgba(0,0,0,0.5);
-      border-radius: 0;
+      border-radius: 12px;
       overflow: hidden;
       background: none;
       position: relative;
@@ -40,17 +38,14 @@
       justify-content: center;
       align-items: center;
       position: relative;
-      touch-action: none;
     }
     #avatarCanvas {
       max-width: 100%;
       max-height: 100%;
-      width: 100vw;
-      height: 50vh;
       border: 1px solid #ccc;
       background: transparent;
-      touch-action: none;
     }
+    /* Оверлей для перетаскивания файлов */
     #dragOverlay {
       position: absolute;
       top: 0;
@@ -62,51 +57,36 @@
       justify-content: center;
       align-items: center;
       color: #fff;
-      font-size: 4vw;
+      font-size: 24px;
       font-weight: bold;
       pointer-events: none;
       opacity: 0;
       transition: opacity 0.3s ease;
     }
     .tools {
-      width: 100%;
-      height: 50vh;
-      padding: 3vw;
+      width: 350px;
+      padding: 20px;
       overflow-y: auto;
       background: #c6ddff;
       position: relative;
       transition: all 0.3s ease;
     }
-    #hideToolsButton, #openToolsButton, #shareTelegramBtn {
+    #hideToolsButton {
       display: block;
-      margin: 2vw 0;
-      padding: 2.5vw 3vw;
+      margin-bottom: 20px;
+      padding: 10px 15px;
       background: red;
       color: #fff;
       border: none;
       border-radius: 5px;
-      font-size: 4vw;
       font-weight: bold;
       cursor: pointer;
       width: 100%;
-      touch-action: manipulation;
-      transition: background 0.2s;
-      z-index: 10; /* Ensure button is clickable */
-    }
-    #hideToolsButton:hover, #openToolsButton:hover, #shareTelegramBtn:hover {
-      background: darkred;
-    }
-    #shareTelegramBtn {
-      background: #0088cc;
-    }
-    #shareTelegramBtn:hover {
-      background: #006699;
     }
     .tools label {
       display: block;
-      margin-top: 3vw;
+      margin-top: 15px;
       font-weight: bold;
-      font-size: 4vw;
     }
     .tools input[type="range"],
     .tools select,
@@ -114,38 +94,43 @@
     .tools input[type="file"],
     .tools textarea {
       width: 100%;
-      margin-top: 1vw;
-      padding: 2vw;
-      font-size: 4vw;
+      margin-top: 5px;
+      padding: 10px;
+      font-size: 16px;
       box-sizing: border-box;
     }
     .tools input[type="color"] {
-      height: 8vw; /* Fixed height to prevent stretching */
+      height: 40px;
       padding: 0;
-      border: 1px solid #ccc;
-      border-radius: 5px;
+      cursor: pointer;
       appearance: none;
       -webkit-appearance: none;
-      -moz-appearance: none;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    .tools input[type="color"]::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+    .tools input[type="color"]::-webkit-color-swatch {
+      border: none;
+    }
+    .tools input[type="color"]::-moz-color-swatch {
+      border: none;
     }
     .btn-remove {
       display: inline-block;
-      margin-top: 2vw;
-      padding: 2vw;
+      margin-top: 10px;
+      padding: 10px;
       background: red;
       color: #fff;
       font-weight: bold;
       border: none;
       cursor: pointer;
-      font-size: 4vw;
-      transition: background 0.2s;
-    }
-    .btn-remove:hover {
-      background: darkred;
     }
     .tools button {
-      margin-top: 3vw;
-      padding: 2.5vw 3vw;
+      margin-top: 15px;
+      padding: 10px 15px;
       background: blue;
       color: #fff;
       border: none;
@@ -153,18 +138,13 @@
       font-weight: bold;
       cursor: pointer;
       width: 100%;
-      font-size: 4vw;
-      transition: background 0.2s;
-    }
-    .tools button:hover {
-      background: darkblue;
     }
     .preview.dragover {
       border: 3px dashed #888;
     }
     #mediaSettings {
-      margin-top: 3vw;
-      padding: 2vw;
+      margin-top: 15px;
+      padding: 10px;
       border: 1px dashed #ccc;
       display: none;
     }
@@ -182,29 +162,23 @@
     }
     #orientation-warning div {
       background-color: rgba(50, 50, 50, 0.9);
-      padding: 5vw;
+      padding: 20px;
       border-radius: 10px;
       text-align: center;
     }
     #orientation-warning p {
-      margin: 0 0 5vw;
+      margin: 0 0 20px;
       color: #fff;
       font-weight: bold;
-      font-size: 4vw;
     }
     #orientation-warning button {
-      padding: 2.5vw 5vw;
-      font-size: 4vw;
+      padding: 10px 20px;
       font-weight: bold;
       cursor: pointer;
       background-color: red;
       color: white;
       border: none;
       border-radius: 5px;
-      transition: background 0.2s;
-    }
-    #orientation-warning button:hover {
-      background: darkred;
     }
     #video-modal {
       display: none;
@@ -220,38 +194,40 @@
     }
     #video-modal div {
       background-color: rgba(50, 50, 50, 0.9);
-      padding: 5vw;
+      padding: 20px;
       border-radius: 10px;
       text-align: center;
     }
     #video-modal p {
-      margin: 0 0 5vw;
+      margin: 0 0 20px;
       color: #fff;
       font-weight: bold;
-      font-size: 4vw;
     }
     #video-modal button {
-      padding: 2.5vw 5vw;
-      font-size: 4vw;
+      padding: 10px 20px;
       font-weight: bold;
       cursor: pointer;
       background-color: red;
       color: white;
       border: none;
       border-radius: 5px;
-      margin: 0 1vw;
-      transition: background 0.2s;
-    }
-    #video-modal button:hover {
-      background: darkred;
+      margin: 0 5px;
     }
     #openToolsButton {
-      position: fixed;
-      top: 2vw;
-      left: 2vw;
-      z-index: 9999;
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      padding: 10px 15px;
+      background: red;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
       display: none;
+      z-index: 9999;
     }
+    /* Модальное окно для рисования своей формы */
     #customShapeModal {
       position: fixed;
       top: 0;
@@ -265,12 +241,13 @@
       align-items: center;
       flex-direction: column;
     }
+    /* Блок для настройки размера ластика – позиционируется слева от холста */
     #eraserSettings {
       position: absolute;
-      left: 5vw;
-      top: 5vw;
+      left: 20px;
+      top: 20px;
       background: rgba(0,0,0,0.6);
-      padding: 2vw;
+      padding: 10px;
       border-radius: 5px;
       display: none;
       z-index: 21000;
@@ -278,158 +255,83 @@
     #eraserSettings label {
       font-weight: bold;
       color: #fff;
-      font-size: 4vw;
     }
     #eraserSettings input[type="range"] {
-      width: 40vw;
-      margin-top: 1vw;
+      width: 150px;
+      margin-top: 5px;
     }
     #customShapeModal canvas {
       background: #fff;
       border: 2px solid #000;
-      width: 90vw;
-      height: 50vh;
     }
     #customShapeModal .modal-buttons {
-      margin-top: 3vw;
+      margin-top: 15px;
       display: flex;
-      gap: 2vw;
+      gap: 10px;
     }
     #customShapeModal button {
-      padding: 2.5vw 5vw;
+      padding: 10px 20px;
       background: green;
       color: #fff;
       border: none;
       border-radius: 5px;
       font-weight: bold;
       cursor: pointer;
-      font-size: 4vw;
-      transition: background 0.2s;
-    }
-    #customShapeModal button:hover {
-      background: darkgreen;
     }
     #customShapeModal button.cancel {
       background: red;
     }
-    #customShapeModal button.cancel:hover {
-      background: darkred;
-    }
-    @media (min-width: 600px) {
+    @media (max-width: 600px) {
       .container {
-        flex-direction: row;
-        width: 90%;
-        max-width: 1200px;
-        height: 90vh;
-        border-radius: 12px;
-      }
-      .preview {
-        width: 60%;
-        height: 100%;
-      }
-      .tools {
-        width: 40%;
-        height: 100%;
-        padding: 20px;
-      }
-      #avatarCanvas {
+        flex-direction: column;
         width: 100%;
         height: 100%;
+        border-radius: 0;
       }
-      #hideToolsButton, #openToolsButton, #shareTelegramBtn {
-        font-size: 16px;
-        padding: 10px 15px;
-      }
-      .tools label, .tools button, .btn-remove {
-        font-size: 16px;
-      }
-      .tools input[type="range"],
-      .tools select,
-      .tools input[type="color"],
-      .tools input[type="file"],
-      .tools textarea {
-        font-size: 16px;
-        padding: 10px;
-      }
-      .tools input[type="color"] {
-        height: 40px; /* Fixed height for desktop */
-        width: 60px; /* Constrain width */
-      }
-      #orientation-warning p, #video-modal p {
-        font-size: 16px;
-      }
-      #orientation-warning button, #video-modal button {
-        font-size: 16px;
-        padding: 10px 20px;
-      }
-      #eraserSettings input[type="range"] {
-        width: 150px;
-      }
-      #customShapeModal canvas {
-        width: 500px;
-        height: 500px;
-      }
-      #customShapeModal button {
-        font-size: 16px;
-        padding: 10px 20px;
-      }
-      #dragOverlay {
-        font-size: 18px;
-      }
-    }
-    @media (max-width: 400px) {
-      #avatarCanvas {
-        height: 40vh;
+      .preview {
+        width: 100%;
+        height: 50vh;
       }
       .tools {
-        height: 60vh;
-        padding: 2vw;
+        width: 100%;
+        height: 50vh;
       }
-      #hideToolsButton, #openToolsButton, #shareTelegramBtn {
-        font-size: 3.5vw;
-        padding: 2vw 2.5vw;
-      }
-      .tools label {
-        font-size: 3.5vw;
-      }
-      .tools input[type="range"],
-      .tools select,
-      .tools input[type="color"],
-      .tools input[type="file"],
-      .tools textarea {
-        font-size: 3.5vw;
-        padding: 1.5vw;
-      }
-      .tools input[type="color"] {
-        height: 6vw; /* Smaller height for small screens */
-        width: 20vw; /* Constrain width */
+      #hideToolsButton {
+        padding: 8px 12px;
       }
       #customShapeModal canvas {
-        width: 80vw;
-        height: 40vh;
+        width: 90vw;
+        height: 50vh;
+      }
+      #eraserSettings input[type="range"] {
+        width: 100px;
       }
     }
   </style>
 </head>
 <body>
+
+  <!-- Предупреждение об альбомном режиме -->
   <div id="orientation-warning">
     <div>
-      <p>Пожалуйста, используйте портретный режим для лучшего отображения.</p>
+      <p>Некоторые элементы могут не отображаться в альбомном режиме<br/>Советуем перевернуть ваш телефон в портретный режим.</p>
       <button id="orientation-ok">OK</button>
     </div>
   </div>
 
+  <!-- Модальное окно для ошибки загрузки видео -->
   <div id="video-modal">
     <div>
-      <p>Видео не должно превышать 15 секунд!</p>
+      <p>Можно загружать видео максимум до 15 секунд!</p>
       <button id="video-modal-ok">OK</button>
     </div>
   </div>
 
+  <!-- Модальное окно для рисования своей формы -->
   <div id="customShapeModal">
     <div id="eraserSettings">
       <label for="eraserSizeRange">Размер ластика:</label>
-      <input type="range" id="eraserSizeRange" min="5" max="100" value="20" />
+      <input type="range" id="eraserSizeRange" min="5" max="250" value="20" />
     </div>
     <canvas id="customShapeCanvas" width="400" height="400"></canvas>
     <div class="modal-buttons">
@@ -443,24 +345,23 @@
   <div class="container">
     <button id="openToolsButton"><b>ОТКРЫТЬ МЕНЮ ИНСТРУМЕНТОВ</b></button>
     <button 
-      onclick="window.location.href = 'main.html'" 
-      style="padding: 2.5vw 3vw; font-size: 4vw; display: none; width: 25%; height: 5vh; margin-top: 2%;"
-      id="backToMainMenuButton"
+    onclick="window.location.href = 'main.html'" 
+    style="padding: 10px; font-size: 16px; display: none; width: 25%; height: 5vh; margin-top: 5%;"
+    id="backToMainMenuButton"
     >
-      ВЕРНУТЬСЯ В ГЛАВНОЕ МЕНЮ
+    ВЕРНУТЬСЯ В ГЛАВНОЕ МЕНЮ
     </button>
 
     <div class="preview" id="previewArea">
-      <canvas id="avatarCanvas"></canvas>
-      <div id="dragOverlay">Перетащите сюда фото, видео или шрифт<br>Не загружайте папки!</div>
+      <canvas id="avatarCanvas" width="300" height="300"></canvas>
+      <div id="dragOverlay">Перетащите сюда фото, видео или файл шрифта<br>Ни в коем случае не скидывайте папки!</div>
     </div>
 
     <div class="tools" id="toolsPanel">
       <button id="hideToolsButton"><b>УБРАТЬ МЕНЮ ИНСТРУМЕНТОВ</b></button>
-      <button id="shareTelegramBtn"><b>ПОДЕЛИТЬСЯ В TELEGRAM</b></button>
       <button 
         onclick="window.location.href = 'main.html'" 
-        style="padding: 2.5vw 3vw; font-size: 4vw;"
+        style="padding: 10px 20px; font-size: 16px;"
       >
         ВЕРНУТЬСЯ В ГЛАВНОЕ МЕНЮ
       </button>
@@ -475,9 +376,9 @@
       <input type="color" id="borderColor" value="#000000" />
 
       <label for="borderWidth"><b>Толщина границы:</b></label>
-      <input type="range" id="borderWidth" min="0" max="20" value="0" />
+      <input type="range" id="borderWidth" min="0" max="100" value="0" />
 
-      <label for="text"><b>Текст на аватарке: <span id="charCount">0/10 000</span></b></label>
+      <label for="text"><b>Текст на аватарке:(максимум 10 000 символов) <span id="charCount">0/10 000</span></b></label>
       <textarea id="text" placeholder="Ваш текст..." maxlength="10000"></textarea>
 
       <label for="fontSelect"><b>Шрифт текста:</b></label>
@@ -504,10 +405,10 @@
       <button id="fontUploadButton" style="display:none;"><b>ЗАГРУЗИТЬ СВОЙ ШРИФТ</b></button>
 
       <label for="textSize"><b>Размер текста:</b></label>
-      <input type="range" id="textSize" min="10" max="100" value="50" />
+      <input type="range" id="textSize" min="0" max="1000" value="50" />
 
       <label for="textShadow"><b>Тень текста:</b></label>
-      <input type="range" id="textShadow" min="0" max="10" value="0" />
+      <input type="range" id="textShadow" min="0" max="30" value="0" />
 
       <label for="shapeSelect"><b>Форма аватарки:</b></label>
       <select id="shapeSelect">
@@ -534,9 +435,10 @@
       </select>
 
       <label for="imageUpload"><b>Загрузить фото:</b></label>
-      <input type="file" id="imageUpload" accept="image/*" />
+      <input type="file" id="imageUpload" />
       <button id="removeImageBtn" class="btn-remove" style="display:none;"><b>УДАЛИТЬ ФОТО</b></button>
 
+      <!-- Блок загрузки видео отображается только если выбран тип фона "telegram" -->
       <div id="videoSection" style="display:none;">
         <label for="videoUpload"><b>Загрузить видео (15с):</b></label>
         <input type="file" id="videoUpload" accept="video/*" />
@@ -562,17 +464,15 @@
         </select>
 
         <label for="blurRange"><b>Размытие фото/видео:</b></label>
-        <input type="range" id="blurRange" min="0" max="10" value="0" />
+        <input type="range" id="blurRange" min="0" max="40" value="0" />
       </div>
     </div>
   </div>
 
   <script>
-    const tg = window.Telegram?.WebApp;
-
     /* ========= 0. Проверка ориентации устройства ========= */
     function checkOrientationWarning() {
-      if (window.innerWidth > window.innerHeight && window.innerWidth <= 600) {
+      if (window.innerWidth > window.innerHeight) {
         orientationWarning.style.display = 'flex';
       } else {
         orientationWarning.style.display = 'none';
@@ -603,7 +503,6 @@
     const dragOverlay = document.getElementById('dragOverlay');
     const toolsPanel = document.getElementById('toolsPanel');
     const openToolsButton = document.getElementById('openToolsButton');
-    const shareTelegramBtn = document.getElementById('shareTelegramBtn');
 
     const bgColorInput = document.getElementById('bgColor');
     const textColorInput = document.getElementById('textColor');
@@ -622,16 +521,16 @@
     const videoSection = document.getElementById('videoSection');
     const videoUpload = document.getElementById('videoUpload');
     const removeVideoBtn = document.getElementById('removeVideoBtn');
+    const hideToolsButton = document.getElementById('hideToolsButton');
     const mediaSettings = document.getElementById('mediaSettings');
     const alignCheckbox = document.getElementById('alignCheckbox');
     const qualitySelect = document.getElementById('qualitySelect');
     const blurRange = document.getElementById('blurRange');
 
-    /* ========= 3. Переменные для медиа и состояния ========= */
+    /* ========= 3. Переменные для медиа ========= */
     let bgImage = null;
     let bgVideo = null;
     let videoAnimationId = null;
-    let lastState = {};
 
     /* ========= 4. Переменные для пользовательской формы ========= */
     let drawnStrokes = [];
@@ -651,12 +550,6 @@
         uploadOpt.disabled = true;
         uploadOpt.textContent = 'ЗАГРУЗИТЬ ШРИФТ (Не доступно)';
       }
-      if (!tg) {
-        console.error('Telegram WebApp SDK не инициализирован');
-        alert('Ошибка: Telegram WebApp SDK не загружен. Пожалуйста, откройте приложение через Telegram.');
-      } else {
-        console.log('Telegram WebApp SDK инициализирован:', tg);
-      }
     });
 
     /* ========= 6. Обработка показа/скрытия панели инструментов ========= */
@@ -674,172 +567,63 @@
       openToolsButton.style.display = 'none';
     });
 
-    /* ========= 7. Telegram Sharing ========= */
-    shareTelegramBtn.addEventListener('click', () => {
-      console.log('Нажата кнопка "Поделиться в Telegram"');
-      if (!tg) {
-        console.error('Telegram WebApp SDK не доступен');
-        alert('Ошибка: Telegram WebApp SDK не доступен. Откройте приложение через Telegram.');
-        return;
-      }
+    /* ========= 7. Функция отрисовки аватарки ========= */
+    function drawAvatar() {
+      const size = Math.min(canvas.parentElement.clientWidth, canvas.parentElement.clientHeight);
+      canvas.width = size;
+      canvas.height = size;
+      ctx.clearRect(0, 0, size, size);
+
+      ctx.save();
+      applyShapeClip(ctx, size, shapeSelect.value);
+      ctx.fillStyle = bgColorInput.value;
+      ctx.fillRect(0, 0, size, size);
+
       if (bgVideo) {
-        console.log('Попытка отправки видео, которое не поддерживается');
-        alert('Видео-аватарки нельзя отправить в Telegram. Пожалуйста, используйте статическое изображение.');
-        return;
+        drawMedia(bgVideo);
+      } else if (bgImage) {
+        drawMedia(bgImage);
       }
-      const shareCanvas = document.createElement('canvas');
-      const shareSize = 64; // Further reduced size
-      shareCanvas.width = shareSize;
-      shareCanvas.height = shareSize;
-      const shareCtx = shareCanvas.getContext('2d');
+      ctx.restore();
 
-      // Redraw avatar on smaller canvas
-      shareCtx.save();
-      applyShapeClip(shareCtx, shareSize, shapeSelect.value);
-      shareCtx.fillStyle = bgColorInput.value;
-      shareCtx.fillRect(0, 0, shareSize, shareSize);
-      if (bgImage) {
-        drawMedia(bgImage, shareCtx, shareSize);
-      }
-      shareCtx.restore();
-
-      const bw = +borderWidthInput.value * (shareSize / canvas.width);
+      const bw = +borderWidthInput.value;
       if (bw > 0) {
-        shareCtx.save();
-        shareCtx.beginPath();
+        ctx.save();
+        ctx.beginPath();
         if (shapeSelect.value === "circle") {
-          shareCtx.arc(shareSize/2, shareSize/2, shareSize/2 - bw/2, 0, Math.PI*2);
+          ctx.arc(size/2, size/2, size/2 - bw/2, 0, Math.PI*2);
         } else if (shapeSelect.value === "square" || shapeSelect.value === "rectangle") {
-          shareCtx.rect(bw/2, bw/2, shareSize - bw, shareSize - bw);
+          ctx.rect(bw/2, bw/2, size - bw, size - bw);
         } else {
-          applyShapeClip(shareCtx, shareSize, shapeSelect.value);
+          applyShapeClip(ctx, size, shapeSelect.value);
         }
-        shareCtx.strokeStyle = borderColorInput.value;
-        shareCtx.lineWidth = bw;
-        shareCtx.stroke();
-        shareCtx.restore();
+        ctx.strokeStyle = borderColorInput.value;
+        ctx.lineWidth = bw;
+        ctx.stroke();
+        ctx.restore();
       }
 
-      const txt = textInput.value.slice(0, 100); // Limit text to 100 chars
+      const txt = textInput.value;
       if (txt.trim() !== "") {
-        shareCtx.save();
+        ctx.save();
         const lines = txt.split("\n");
-        shareCtx.font = `${textSizeInput.value * (shareSize / canvas.width)}px ${fontSelect.value}`;
-        shareCtx.fillStyle = textColorInput.value;
-        shareCtx.textAlign = 'center';
-        shareCtx.textBaseline = 'middle';
-        shareCtx.shadowColor = '#000';
-        shareCtx.shadowBlur = +textShadowInput.value * (shareSize / canvas.width);
-        const lineHeight = textSizeInput.value * 1.2 * (shareSize / canvas.width);
+        ctx.font = `${textSizeInput.value}px ${fontSelect.value}`;
+        ctx.fillStyle = textColorInput.value;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.shadowColor = '#000';
+        ctx.shadowBlur = +textShadowInput.value;
+        const lineHeight = textSizeInput.value * 1.2;
         const totalHeight = lineHeight * lines.length;
         lines.forEach((line, i) => {
-          shareCtx.fillText(line, shareSize/2, shareSize/2 - totalHeight/2 + lineHeight/2 + i * lineHeight);
+          ctx.fillText(line, size/2, size/2 - totalHeight/2 + lineHeight/2 + i * lineHeight);
         });
-        shareCtx.restore();
-      }
-
-      const dataUrl = shareCanvas.toDataURL('image/jpeg', 0.4); // Even lower quality
-      const data = JSON.stringify({ photo: dataUrl }); // Simplified payload
-      console.log('Размер данных для отправки:', data.length, 'байт');
-      if (data.length > 64000) {
-        console.warn('Данные слишком большие:', data.length);
-        alert('Ошибка: Изображение слишком большое для отправки в Telegram. Попробуйте уменьшить текст или убрать изображение.');
-        const link = document.createElement('a');
-        link.href = dataUrl;
-        link.download = 'avatar.jpg';
-        link.click();
-        return;
-      }
-      try {
-        console.log('Отправка данных через tg.sendData');
-        tg.sendData(data);
-        console.log('Данные успешно отправлены');
-      } catch (e) {
-        console.error('Ошибка при отправке данных:', e);
-        alert(`Ошибка отправки в Telegram: ${e.message || 'Не удалось отправить данные. Попробуйте уменьшить текст или изображение.'}`);
-      }
-    });
-
-    /* ========= 8. Функция отрисовки аватарки ========= */
-    function drawAvatar() {
-      const currentState = {
-        bgColor: bgColorInput.value,
-        textColor: textColorInput.value,
-        borderColor: borderColorInput.value,
-        borderWidth: borderWidthInput.value,
-        text: textInput.value,
-        font: fontSelect.value,
-        textSize: textSizeInput.value,
-        textShadow: textShadowInput.value,
-        shape: shapeSelect.value,
-        bgType: bgTypeSelect.value,
-        align: alignCheckbox.checked,
-        quality: qualitySelect.value,
-        blur: blurRange.value,
-        hasImage: !!bgImage,
-        hasVideo: !!bgVideo,
-      };
-      if (JSON.stringify(currentState) === JSON.stringify(lastState)) return;
-      lastState = currentState;
-
-      requestAnimationFrame(() => {
-        const isMobile = window.innerWidth <= 600;
-        const size = Math.min(previewArea.clientWidth, previewArea.clientHeight, isMobile ? 512 : 1024);
-        canvas.width = size;
-        canvas.height = size;
-        ctx.clearRect(0, 0, size, size);
-
-        ctx.save();
-        applyShapeClip(ctx, size, shapeSelect.value);
-        ctx.fillStyle = bgColorInput.value;
-        ctx.fillRect(0, 0, size, size);
-
-        if (bgVideo) {
-          drawMedia(bgVideo, ctx, size);
-        } else if (bgImage) {
-          drawMedia(bgImage, ctx, size);
-        }
         ctx.restore();
-
-        const bw = +borderWidthInput.value;
-        if (bw > 0) {
-          ctx.save();
-          ctx.beginPath();
-          if (shapeSelect.value === "circle") {
-            ctx.arc(size/2, size/2, size/2 - bw/2, 0, Math.PI*2);
-          } else if (shapeSelect.value === "square" || shapeSelect.value === "rectangle") {
-            ctx.rect(bw/2, bw/2, size - bw, size - bw);
-          } else {
-            applyShapeClip(ctx, size, shapeSelect.value);
-          }
-          ctx.strokeStyle = borderColorInput.value;
-          ctx.lineWidth = bw;
-          ctx.stroke();
-          ctx.restore();
-        }
-
-        const txt = textInput.value;
-        if (txt.trim() !== "") {
-          ctx.save();
-          const lines = txt.split("\n");
-          ctx.font = `${textSizeInput.value}px ${fontSelect.value}`;
-          ctx.fillStyle = textColorInput.value;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.shadowColor = '#000';
-          ctx.shadowBlur = +textShadowInput.value;
-          const lineHeight = textSizeInput.value * 1.2;
-          const totalHeight = lineHeight * lines.length;
-          lines.forEach((line, i) => {
-            ctx.fillText(line, size/2, size/2 - totalHeight/2 + lineHeight/2 + i * lineHeight);
-          });
-          ctx.restore();
-        }
-      });
+      }
     }
 
-    /* ========= 9. Функция отрисовки медиа ========= */
-    function drawMedia(media, context = ctx, size = canvas.width) {
+    /* ========= 8. Функция отрисовки медиа ========= */
+    function drawMedia(media) {
       const qualityVal = qualitySelect.value;
       const align = alignCheckbox.checked;
       const blurVal = blurRange.value;
@@ -867,10 +651,10 @@
         mediaHeight = targetHeight;
       }
       if (blurVal > 0) {
-        context.filter = `blur(${blurVal}px)`;
+        ctx.filter = `blur(${blurVal * 3}px)`;
       }
-      const cw = size;
-      const ch = size;
+      const cw = canvas.width;
+      const ch = canvas.height;
       if (align) {
         const canvasRatio = cw / ch;
         const mediaRatio = mediaWidth / mediaHeight;
@@ -886,14 +670,14 @@
           sx = 0;
           sy = (mediaHeight - sHeight) / 2;
         }
-        context.drawImage(source, sx, sy, sWidth, sHeight, 0, 0, cw, ch);
+        ctx.drawImage(source, sx, sy, sWidth, sHeight, 0, 0, cw, ch);
       } else {
-        context.drawImage(source, 0, 0, cw, ch);
+        ctx.drawImage(source, 0, 0, cw, ch);
       }
-      context.filter = 'none';
+      ctx.filter = 'none';
     }
 
-    /* ========= 10. Функция применения клипа по форме ========= */
+    /* ========= 9. Функция применения клипа по форме ========= */
     function applyShapeClip(ctx, size, shape) {
       ctx.beginPath();
       const center = size / 2;
@@ -1029,7 +813,7 @@
       ctx.clip();
     }
 
-    /* ========= 11. Обновление видимости блока загрузки видео ========= */
+    /* ========= 10. Обновление видимости блока загрузки видео ========= */
     function updateToolsVisibility() {
       if (bgTypeSelect.value === 'telegram') {
         videoSection.style.display = 'block';
@@ -1037,12 +821,10 @@
         videoSection.style.display = 'none';
         bgVideo = null;
         removeVideoBtn.style.display = 'none';
-        stopVideoAnimation();
       }
-      drawAvatar();
     }
 
-    /* ========= 12. Обновление видимости mediaSettings ========= */
+    /* ========= 11. Обновление видимости mediaSettings ========= */
     function updateMediaSettingsVisibility() {
       if (bgImage || bgVideo) {
         mediaSettings.style.display = 'block';
@@ -1050,7 +832,6 @@
       } else {
         mediaSettings.style.display = 'none';
       }
-      drawAvatar();
     }
     function updateQualityOptions() {
       const options = qualitySelect.options;
@@ -1071,18 +852,18 @@
       }
     }
 
-    /* ========= 13. Загрузка фото ========= */
+    /* ========= 12. Загрузка фото ========= */
     imageUpload.addEventListener('change', (e) => {
       const file = e.target.files[0];
       e.target.value = '';
       if (!file || !file.type.startsWith('image/')) return;
       bgVideo = null;
       removeVideoBtn.style.display = 'none';
-      stopVideoAnimation();
       const img = new Image();
       img.onload = () => {
         bgImage = img;
         removeImageBtn.style.display = 'inline-block';
+        drawAvatar();
         updateMediaSettingsVisibility();
       };
       img.src = URL.createObjectURL(file);
@@ -1091,10 +872,11 @@
       bgImage = null;
       imageUpload.value = '';
       removeImageBtn.style.display = 'none';
+      drawAvatar();
       updateMediaSettingsVisibility();
     });
 
-    /* ========= 14. Загрузка видео ========= */
+    /* ========= 13. Загрузка видео ========= */
     videoUpload.addEventListener('change', (e) => {
       const files = e.target.files;
       if (!files || files.length === 0) return;
@@ -1108,6 +890,7 @@
       vid.playsInline = true;
 
       vid.addEventListener('loadedmetadata', () => {
+        console.log("Видео загружено:", file.name, "Длительность:", vid.duration);
         if (vid.duration > 15) {
           videoModal.style.display = 'flex';
           bgVideo = null;
@@ -1117,6 +900,7 @@
           removeVideoBtn.style.display = 'inline-block';
           vid.play();
           startVideoAnimation();
+          drawAvatar();
           updateMediaSettingsVisibility();
         }
         videoUpload.value = '';
@@ -1128,30 +912,25 @@
       });
 
       vid.src = URL.createObjectURL(file);
-      vid.load();
+      console.log("Начинаем загрузку видео:", file.name);
+      vid.load(); 
     });
     removeVideoBtn.addEventListener('click', () => {
       bgVideo = null;
       videoUpload.value = '';
       removeVideoBtn.style.display = 'none';
       stopVideoAnimation();
+      drawAvatar();
       updateMediaSettingsVisibility();
     });
     function startVideoAnimation() {
-      let lastFrameTime = 0;
-      const maxFPS = 30;
-      function updateFrame(timestamp) {
-        if (timestamp - lastFrameTime < 1000 / maxFPS) {
-          videoAnimationId = requestAnimationFrame(updateFrame);
-          return;
-        }
-        lastFrameTime = timestamp;
+      function updateFrame() {
         if (bgVideo && !bgVideo.paused && !bgVideo.ended) {
           drawAvatar();
           videoAnimationId = requestAnimationFrame(updateFrame);
         }
       }
-      videoAnimationId = requestAnimationFrame(updateFrame);
+      updateFrame();
     }
     function stopVideoAnimation() {
       if (videoAnimationId) {
@@ -1160,7 +939,7 @@
       }
     }
 
-    /* ========= 15. Логика загрузки шрифта ========= */
+    /* ========= 14. Логика загрузки шрифта ========= */
     fontSelect.addEventListener('change', () => {
       if (fontSelect.value === "upload") {
         fontUploadButton.style.display = 'block';
@@ -1181,7 +960,7 @@
       let files = e.target.files;
       if (!files || files.length === 0) return;
       if (files.length > 1) {
-        alert("Пожалуйста, загрузите один файл шрифта.");
+        alert("Пожалуйста, загрузите один файл шрифта, а не папку.");
         return;
       }
       let fontFile = null;
@@ -1210,7 +989,7 @@
       reader.readAsArrayBuffer(fontFile);
     });
 
-    /* ========= 16. Перетаскивание медиа и файлов шрифта ========= */
+    /* ========= 15. Перетаскивание медиа и файлов шрифта ========= */
     previewArea.addEventListener('dragover', (e) => {
       e.preventDefault();
       previewArea.classList.add('dragover');
@@ -1228,7 +1007,7 @@
       if (!files || files.length === 0) return;
       if (/\.(ttf|otf)$/i.test(files[0].name)) {
         if (files.length > 1) {
-          alert("Пожалуйста, перетащите один файл шрифта.");
+          alert("Пожалуйста, перетащите один файл шрифта, а не папку.");
           return;
         }
         const file = files[0];
@@ -1257,11 +1036,12 @@
           removeImageBtn.style.display = 'inline-block';
           bgVideo = null;
           removeVideoBtn.style.display = 'none';
-          stopVideoAnimation();
+          drawAvatar();
           updateMediaSettingsVisibility();
         };
         img.src = URL.createObjectURL(files[0]);
-      } else if (files[0].type.startsWith('video/')) {
+      }
+      else if (files[0].type.startsWith('video/')) {
         const vid = document.createElement('video');
         vid.muted = true;
         vid.playsInline = true;
@@ -1277,6 +1057,7 @@
             removeImageBtn.style.display = 'none';
             vid.play();
             startVideoAnimation();
+            drawAvatar();
             updateMediaSettingsVisibility();
           }
         });
@@ -1285,7 +1066,7 @@
       }
     });
 
-    /* ========= 17. Изменения для пользовательской формы ========= */
+    /* ========= 16. Изменения для пользовательской формы ========= */
     const customShapeModal = document.getElementById('customShapeModal');
     const customShapeCanvas = document.getElementById('customShapeCanvas');
     const customCtx = customShapeCanvas.getContext('2d');
@@ -1466,17 +1247,19 @@
       if (shapeSelect.value === 'custom') {
         customShapeModal.style.display = 'flex';
       }
-      drawAvatar();
     });
 
-    /* ========= 18. Привязка событий для остальных полей ========= */
+    /* ========= 17. Привязка событий для остальных полей ========= */
     const allInputs = document.querySelectorAll('.tools input, .tools select, .tools textarea');
     allInputs.forEach(el => {
       el.addEventListener('input', drawAvatar);
       el.addEventListener('change', drawAvatar);
     });
-    bgTypeSelect.addEventListener('change', updateToolsVisibility);
-
+    bgTypeSelect.addEventListener('change', () => {
+      updateToolsVisibility();
+      drawAvatar();
+    });
+    
     function formatNumber(n) {
       return n.toLocaleString('ru-RU');
     }
@@ -1509,7 +1292,7 @@
       }
     });
 
-    /* ========= 19. Инициализация ========= */
+    /* ========= 18. Инициализация ========= */
     updateToolsVisibility();
     updateMediaSettingsVisibility();
     drawAvatar();

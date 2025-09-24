@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Avatar Generator</title>
   <style>
-    /* Common styles */
+    /* General styles */
     * {
       user-select: none;
     }
@@ -45,7 +45,7 @@
       border: 1px solid #ccc;
       background: transparent;
     }
-    /* Drag‐and‐drop overlay */
+    /* Overlay for file drag-and-drop */
     #dragOverlay {
       position: absolute;
       top: 0;
@@ -62,8 +62,6 @@
       pointer-events: none;
       opacity: 0;
       transition: opacity 0.3s ease;
-      text-align: center;
-      line-height: 1.4;
     }
     .tools {
       width: 350px;
@@ -100,6 +98,25 @@
       padding: 10px;
       font-size: 16px;
       box-sizing: border-box;
+    }
+    .tools input[type="color"] {
+      height: 40px;
+      padding: 0;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    .tools input[type="color"]::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+    .tools input[type="color"]::-webkit-color-swatch {
+      border: none;
+    }
+    .tools input[type="color"]::-moz-color-swatch {
+      border: none;
     }
     .btn-remove {
       display: inline-block;
@@ -148,10 +165,10 @@
       padding: 20px;
       border-radius: 10px;
       text-align: center;
-      color: #fff;
     }
     #orientation-warning p {
       margin: 0 0 20px;
+      color: #fff;
       font-weight: bold;
     }
     #orientation-warning button {
@@ -180,10 +197,10 @@
       padding: 20px;
       border-radius: 10px;
       text-align: center;
-      color: #fff;
     }
     #video-modal p {
       margin: 0 0 20px;
+      color: #fff;
       font-weight: bold;
     }
     #video-modal button {
@@ -210,7 +227,7 @@
       display: none;
       z-index: 9999;
     }
-    /* Custom shape modal */
+    /* Modal window for drawing custom shape */
     #customShapeModal {
       position: fixed;
       top: 0;
@@ -224,6 +241,7 @@
       align-items: center;
       flex-direction: column;
     }
+    /* Block for eraser size settings – positioned to the left of the canvas */
     #eraserSettings {
       position: absolute;
       left: 20px;
@@ -293,15 +311,15 @@
 </head>
 <body>
 
-  <!-- Portrait orientation warning -->
+  <!-- Orientation warning -->
   <div id="orientation-warning">
     <div>
-      <p>Some elements may not display correctly in landscape mode.<br/>Please rotate your device to portrait mode.</p>
+      <p>Some elements may not display in landscape mode<br/>We recommend rotating your phone to portrait mode.</p>
       <button id="orientation-ok">OK</button>
     </div>
   </div>
 
-  <!-- Video upload error modal -->
+  <!-- Modal window for video upload error -->
   <div id="video-modal">
     <div>
       <p>You can upload videos up to 15 seconds!</p>
@@ -309,10 +327,10 @@
     </div>
   </div>
 
-  <!-- Custom shape drawing modal -->
+  <!-- Modal window for drawing custom shape -->
   <div id="customShapeModal">
     <div id="eraserSettings">
-      <label for="eraserSizeRange">Eraser size:</label>
+      <label for="eraserSizeRange">Eraser Size:</label>
       <input type="range" id="eraserSizeRange" min="5" max="250" value="20" />
     </div>
     <canvas id="customShapeCanvas" width="400" height="400"></canvas>
@@ -326,41 +344,46 @@
 
   <div class="container">
     <button id="openToolsButton"><b>OPEN TOOLS MENU</b></button>
+    <button 
+      onclick="window.location.href = 'main.html'" 
+      style="padding: 10px; font-size: 16px; display: none; width: 25%; height: 5vh; margin-top: 5%;"
+      id="backToMainMenuButton"
+    >
+      RETURN TO MAIN MENU
+    </button>
 
     <div class="preview" id="previewArea">
       <canvas id="avatarCanvas" width="300" height="300"></canvas>
-      <div id="dragOverlay">
-        Drag & drop an image, video, or font file here<br/>
-        Please do not drop folders!
-      </div>
+      <div id="dragOverlay">Drag and drop a photo, video, or font file here<br>Do not drop folders!</div>
     </div>
 
     <div class="tools" id="toolsPanel">
       <button id="hideToolsButton"><b>HIDE TOOLS MENU</b></button>
-        <button 
+      <button 
         onclick="window.location.href = 'main.html'" 
         style="padding: 10px 20px; font-size: 16px;"
-    >
-        BACK TO MAIN MENU
-        </button>
-      <label for="bgColor"><b>Background color:</b></label>
+      >
+        RETURN TO MAIN MENU
+      </button>
+
+      <label for="bgColor"><b>Background Color:</b></label>
       <input type="color" id="bgColor" value="#800080" />
 
-      <label for="textColor"><b>Text color:</b></label>
+      <label for="textColor"><b>Text Color:</b></label>
       <input type="color" id="textColor" value="#000000" />
 
-      <label for="borderColor"><b>Border color:</b></label>
+      <label for="borderColor"><b>Border Color:</b></label>
       <input type="color" id="borderColor" value="#000000" />
 
-      <label for="borderWidth"><b>Border width:</b></label>
+      <label for="borderWidth"><b>Border Width:</b></label>
       <input type="range" id="borderWidth" min="0" max="100" value="0" />
 
-      <label for="text"><b>Avatar text: (max 10,000 chars) <span id="charCount">0/10000</span></b></label>
+      <label for="text"><b>Text on Avatar: (maximum 10,000 characters) <span id="charCount">0/10,000</span></b></label>
       <textarea id="text" placeholder="Your text..." maxlength="10000"></textarea>
 
-      <label for="fontSelect"><b>Text font:</b></label>
+      <label for="fontSelect"><b>Text Font:</b></label>
       <select id="fontSelect">
-        <option value="upload">UPLOAD FONT</option>
+        <option value="upload">UPLOAD YOUR FONT</option>
         <option value="Arial" selected>Arial</option>
         <option value="Georgia">Georgia</option>
         <option value="Courier New">Courier New</option>
@@ -379,15 +402,15 @@
         <option value="Oswald">Oswald</option>
       </select>
       <input type="file" id="fontUpload" style="display:none" />
-      <button id="fontUploadButton" style="display:none;"><b>UPLOAD FONT</b></button>
+      <button id="fontUploadButton" style="display:none;"><b>UPLOAD YOUR FONT</b></button>
 
-      <label for="textSize"><b>Text size:</b></label>
+      <label for="textSize"><b>Text Size:</b></label>
       <input type="range" id="textSize" min="0" max="1000" value="50" />
 
-      <label for="textShadow"><b>Text shadow:</b></label>
+      <label for="textShadow"><b>Text Shadow:</b></label>
       <input type="range" id="textShadow" min="0" max="30" value="0" />
 
-      <label for="shapeSelect"><b>Avatar shape:</b></label>
+      <label for="shapeSelect"><b>Avatar Shape:</b></label>
       <select id="shapeSelect">
         <option value="circle">Circle</option>
         <option value="square">Square</option>
@@ -402,30 +425,31 @@
         <option value="cloud">Cloud</option>
         <option value="arrowRight">Arrow Right</option>
         <option value="lightning">Lightning</option>
-        <option value="custom"><b>DRAW CUSTOM SHAPE</b></option>
+        <option value="custom"><b>DRAW YOUR SHAPE</b></option>
       </select>
 
-      <label for="bgType"><b>Background type:</b></label>
+      <label for="bgType"><b>Background Type:</b></label>
       <select id="bgType">
         <option value="other">Other</option>
         <option value="telegram">Telegram</option>
       </select>
 
-      <label for="imageUpload"><b>Upload image:</b></label>
+      <label for="imageUpload"><b>Upload Photo:</b></label>
       <input type="file" id="imageUpload" />
-      <button id="removeImageBtn" class="btn-remove" style="display:none;"><b>REMOVE IMAGE</b></button>
+      <button id="removeImageBtn" class="btn-remove" style="display:none;"><b>REMOVE PHOTO</b></button>
 
+      <!-- Video upload block displayed only if Telegram background type is selected -->
       <div id="videoSection" style="display:none;">
-        <label for="videoUpload"><b>Upload video (15s):</b></label>
+        <label for="videoUpload"><b>Upload Video (15s):</b></label>
         <input type="file" id="videoUpload" accept="video/*" />
         <button id="removeVideoBtn" class="btn-remove" style="display:none;"><b>REMOVE VIDEO</b></button>
       </div>
 
       <div id="mediaSettings">
-        <label for="alignCheckbox"><b>Align image/video:</b></label>
+        <label for="alignCheckbox"><b>Align Photo/Video:</b></label>
         <input type="checkbox" id="alignCheckbox" />
 
-        <label for="qualitySelect"><b>Image/video quality:</b></label>
+        <label for="qualitySelect"><b>Photo/Video Quality:</b></label>
         <select id="qualitySelect">
           <option value="original">Original</option>
           <option value="144">144p</option>
@@ -439,14 +463,14 @@
           <option value="4320" disabled>4k</option>
         </select>
 
-        <label for="blurRange"><b>Image/video blur:</b></label>
+        <label for="blurRange"><b>Photo/Video Blur:</b></label>
         <input type="range" id="blurRange" min="0" max="40" value="0" />
       </div>
     </div>
   </div>
 
   <script>
-    /* ========= 0. Check device orientation ========= */
+    /* ========= 0. Device orientation check ========= */
     function checkOrientationWarning() {
       if (window.innerWidth > window.innerHeight) {
         orientationWarning.style.display = 'flex';
@@ -462,7 +486,7 @@
     window.addEventListener('load', checkOrientationWarning);
     window.addEventListener('resize', checkOrientationWarning);
 
-    /* ========= 1. Video error modal ========= */
+    /* ========= 1. Video error modal window ========= */
     const videoModal = document.getElementById('video-modal');
     const videoModalOk = document.getElementById('video-modal-ok');
     videoModalOk.addEventListener('click', () => {
@@ -472,7 +496,7 @@
       videoModal.style.display = 'none';
     });
 
-    /* ========= 2. Elements ========= */
+    /* ========= 2. Element retrieval ========= */
     const canvas = document.getElementById('avatarCanvas');
     const ctx = canvas.getContext('2d');
     const previewArea = document.getElementById('previewArea');
@@ -503,12 +527,12 @@
     const qualitySelect = document.getElementById('qualitySelect');
     const blurRange = document.getElementById('blurRange');
 
-    /* ========= 3. Media vars ========= */
+    /* ========= 3. Media variables ========= */
     let bgImage = null;
     let bgVideo = null;
     let videoAnimationId = null;
 
-    /* ========= 4. Custom shape vars ========= */
+    /* ========= 4. Custom shape variables ========= */
     let drawnStrokes = [];
     let currentStroke = [];
     let customShapePoints = null;
@@ -519,23 +543,22 @@
       eraserRadius = parseInt(eraserSizeRange.value, 10);
     });
 
-    /* ========= 5. FontFace support ========= */
+    /* ========= 5. FontFace support check ========= */
     window.addEventListener('load', () => {
       if (typeof FontFace === 'undefined') {
         const uploadOpt = document.querySelector('option[value="upload"]');
         uploadOpt.disabled = true;
-        uploadOpt.textContent = 'UPLOAD FONT (Not Supported)';
+        uploadOpt.textContent = 'UPLOAD FONT (Not available)';
       }
     });
 
-    /* ========= 6. Tools panel toggle ========= */
+    /* ========= 6. Tools panel show/hide handling ========= */
     hideToolsButton.addEventListener('click', () => {
       toolsPanel.style.display = 'none';
       openToolsButton.style.display = 'block';
-      if (localStorage.getItem('created_profiles')){
+      if (localStorage.getItem('created_profiles')) {
         localStorage.setItem('created_profiles', String(Number(localStorage.getItem('created_profiles')) + 1));
-      }
-      else{
+      } else {
         localStorage.setItem('created_profiles', '1');
       }
     });
@@ -544,7 +567,7 @@
       openToolsButton.style.display = 'none';
     });
 
-    /* ========= 7. Draw avatar ========= */
+    /* ========= 7. Avatar drawing function ========= */
     function drawAvatar() {
       const size = Math.min(canvas.parentElement.clientWidth, canvas.parentElement.clientHeight);
       canvas.width = size;
@@ -599,7 +622,7 @@
       }
     }
 
-    /* ========= 8. Draw media (image/video) ========= */
+    /* ========= 8. Media drawing function ========= */
     function drawMedia(media) {
       const qualityVal = qualitySelect.value;
       const align = alignCheckbox.checked;
@@ -654,7 +677,7 @@
       ctx.filter = 'none';
     }
 
-    /* ========= 9. Apply shape clip ========= */
+    /* ========= 9. Shape clip application function ========= */
     function applyShapeClip(ctx, size, shape) {
       ctx.beginPath();
       const center = size / 2;
@@ -710,7 +733,7 @@
           ctx.bezierCurveTo(
             center + size * 0.5, size * 0.6,
             center + size * 0.5, size * 0.2,
-            center,            size * 0.35
+            center, size * 0.35
           );
           ctx.bezierCurveTo(
             center - size * 0.5, size * 0.2,
@@ -790,7 +813,7 @@
       ctx.clip();
     }
 
-    /* ========= 10. Update video section visibility ========= */
+    /* ========= 10. Update video upload block visibility ========= */
     function updateToolsVisibility() {
       if (bgTypeSelect.value === 'telegram') {
         videoSection.style.display = 'block';
@@ -801,7 +824,7 @@
       }
     }
 
-    /* ========= 11. Update media settings visibility ========= */
+    /* ========= 11. Update mediaSettings visibility ========= */
     function updateMediaSettingsVisibility() {
       if (bgImage || bgVideo) {
         mediaSettings.style.display = 'block';
@@ -829,7 +852,7 @@
       }
     }
 
-    /* ========= 12. Image upload ========= */
+    /* ========= 12. Photo upload ========= */
     imageUpload.addEventListener('change', (e) => {
       const file = e.target.files[0];
       e.target.value = '';
@@ -884,12 +907,12 @@
       });
 
       vid.addEventListener('error', (err) => {
-        console.error("Video loading error", err);
+        console.error("Video upload error", err);
         videoUpload.value = '';
       });
 
       vid.src = URL.createObjectURL(file);
-      console.log("Starting video load:", file.name);
+      console.log("Starting video upload:", file.name);
       vid.load(); 
     });
     removeVideoBtn.addEventListener('click', () => {
@@ -916,7 +939,7 @@
       }
     }
 
-    /* ========= 14. Font loading logic ========= */
+    /* ========= 14. Font upload logic ========= */
     fontSelect.addEventListener('change', () => {
       if (fontSelect.value === "upload") {
         fontUploadButton.style.display = 'block';
@@ -937,7 +960,7 @@
       let files = e.target.files;
       if (!files || files.length === 0) return;
       if (files.length > 1) {
-        alert("Please upload a single font file, not a folder.");
+        alert("Please upload one font file, not a folder.");
         return;
       }
       let fontFile = null;
@@ -961,12 +984,12 @@
           fontSelect.appendChild(option);
           fontSelect.value = fontName;
           drawAvatar();
-        }).catch(err => console.error("Font loading error:", err));
+        }).catch(err => console.error("Font upload error:", err));
       };
       reader.readAsArrayBuffer(fontFile);
     });
 
-    /* ========= 15. Drag-and-drop for media & fonts ========= */
+    /* ========= 15. Drag-and-drop for media and font files ========= */
     previewArea.addEventListener('dragover', (e) => {
       e.preventDefault();
       previewArea.classList.add('dragover');
@@ -984,7 +1007,7 @@
       if (!files || files.length === 0) return;
       if (/\.(ttf|otf)$/i.test(files[0].name)) {
         if (files.length > 1) {
-          alert("Please upload a single font file, not a folder.");
+          alert("Please drag one font file, not a folder.");
           return;
         }
         const file = files[0];
@@ -1001,7 +1024,7 @@
             fontSelect.appendChild(option);
             fontSelect.value = fontName;
             drawAvatar();
-          }).catch(err => console.error("Font loading error:", err));
+          }).catch(err => console.error("Font upload error:", err));
         };
         reader.readAsArrayBuffer(file);
         return;
@@ -1043,7 +1066,7 @@
       }
     });
 
-    /* ========= 16. Custom shape drawing logic ========= */
+    /* ========= 16. Custom shape handling ========= */
     const customShapeModal = document.getElementById('customShapeModal');
     const customShapeCanvas = document.getElementById('customShapeCanvas');
     const customCtx = customShapeCanvas.getContext('2d');
@@ -1226,7 +1249,7 @@
       }
     });
 
-    /* ========= 17. Bind all inputs ========= */
+    /* ========= 17. Event binding for other inputs ========= */
     const allInputs = document.querySelectorAll('.tools input, .tools select, .tools textarea');
     allInputs.forEach(el => {
       el.addEventListener('input', drawAvatar);
@@ -1241,7 +1264,7 @@
       return n.toLocaleString('en-US');
     }
     function updateCharCount() {
-      document.getElementById('charCount').textContent = formatNumber(textInput.value.length) + "/10000";
+      document.getElementById('charCount').textContent = formatNumber(textInput.value.length) + "/" + formatNumber(10000);
     }
     textInput.addEventListener('input', updateCharCount);
 
@@ -1269,7 +1292,7 @@
       }
     });
 
-    /* ========= 18. Init ========= */
+    /* ========= 18. Initialization ========= */
     updateToolsVisibility();
     updateMediaSettingsVisibility();
     drawAvatar();
