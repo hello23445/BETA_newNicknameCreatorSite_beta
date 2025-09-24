@@ -1558,6 +1558,21 @@
             }
         }
 
+        document.addEventListener("click", function (event) {
+        const t = event.target;
+
+        if (
+            t.tagName !== "INPUT" &&
+            t.tagName !== "TEXTAREA" &&
+            t.tagName !== "SELECT" &&
+            !t.isContentEditable
+        ) {
+            if (document.activeElement && document.activeElement.blur) {
+            document.activeElement.blur();
+            }
+        }
+        });
+
         async function securityChecker(){
             const { blockedTokens } = await import('./security.js');
             // Use blockedTokens here as needed

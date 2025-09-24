@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Генератор Аватарки</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     /* Общие стили */
     * {
@@ -425,6 +426,8 @@
         <input type="file" id="videoUpload" accept="video/*" />
         <button id="removeVideoBtn" class="btn-remove" style="display:none;"><b>УДАЛИТЬ ВИДЕО</b></button>
       </div>
+      <button id="share">send</button>
+
 
       <div id="mediaSettings">
         <label for="alignCheckbox"><b>Выровнять фото/видео:</b></label>
@@ -449,8 +452,13 @@
       </div>
     </div>
   </div>
-
   <script>
+      document.getElementById('share').addEventListener('click', () => {
+      tg.sendData(JSON.stringify({
+        photo: "https://example.com/five-seveN.png",
+        text: "Я получил Five-SeveN | Scumbria (Well-Worn) в RFL PRO"
+      }));
+    });
     /* ========= 0. Проверка ориентации устройства ========= */
     function checkOrientationWarning() {
       if (window.innerWidth > window.innerHeight) {
@@ -476,6 +484,7 @@
     window.addEventListener('load', () => {
       videoModal.style.display = 'none';
     });
+
 
     /* ========= 2. Получение элементов ========= */
     const canvas = document.getElementById('avatarCanvas');

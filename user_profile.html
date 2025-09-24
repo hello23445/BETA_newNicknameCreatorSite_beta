@@ -294,6 +294,21 @@
   </div>
 
   <script>
+    
+    document.addEventListener("click", function (event) {
+    const t = event.target;
+
+    if (
+        t.tagName !== "INPUT" &&
+        t.tagName !== "TEXTAREA" &&
+        t.tagName !== "SELECT" &&
+        !t.isContentEditable
+    ) {
+        if (document.activeElement && document.activeElement.blur) {
+        document.activeElement.blur();
+        }
+    }
+    });
     document.getElementById("nameInput").addEventListener("input", function () {
         this.value = this.value.replace(/[^a-zA-Zа-яА-ЯёЁ0-9\-\_\s]/g, "");
     });
