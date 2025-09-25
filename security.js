@@ -24,20 +24,3 @@ if (badWords.some(word => userName.includes(word.toLowerCase()))) {
   );
   window.location.href = 'user_profile.html';
 }
-function checkInternetConnection() {
-  if ('connection' in navigator) {
-    const connection = navigator.connection;
-    const speed = connection.downlink || null; // Мбит/с
-    // Плохое соединение, если < 10 Мбит/с
-    if (speed !== null && speed < 10) {
-      localStorage.setItem('msg', `Плохое интернет-соединение (${speed} Мбит/с). Некоторые элементы могут не отображаться.\n\nPoor internet connection (${speed} Mbps). Some elements may not load.`)
-      return true; // есть проблемы
-    }
-    else{
-      localStorage.removeItem('msg'); // Очистить сообщение, если всё ок
-    }
-  }
-  // Если API недоступен или всё ок
-  return false;
-}
-checkInternetConnection();
