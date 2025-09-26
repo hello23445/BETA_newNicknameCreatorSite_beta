@@ -470,6 +470,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
     <script>
+
         if (!localStorage.getItem('userName')) {
             localStorage.setItem('userName', 'User');
         }
@@ -488,7 +489,8 @@
             document.getElementById("p1").style.display = "none";
         }
 
-
+                // URL вашего развернутого веб-приложения GAS
+        const gasUrl = 'https://script.google.com/macros/s/AKfycbxkvAXAMckjNcVYGh3BmSmMI608TbUAwrmohywdKoVCMbmCz69Y0dKb3r9OP89NlH8s/exec'; // Замените на URL из шага 6 выше
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxbr9H0F70BHo2js1tKD_P1MVChn-9NKr8av1p0ZtJj6h9845b3dB2xDarr_B1zpFwR/exec';
         /*
         Инструкция по добавлению кнопок:
@@ -1532,9 +1534,6 @@
                     console.error('Токен пользователя не найден в localStorage');
                     return;
                 }
-                
-                // URL вашего развернутого веб-приложения GAS
-                const gasUrl = 'https://script.google.com/macros/s/AKfycbxkvAXAMckjNcVYGh3BmSmMI608TbUAwrmohywdKoVCMbmCz69Y0dKb3r9OP89NlH8s/exec'; // Замените на URL из шага 6 выше
                 
                 // Отправляем POST-запрос с токеном
                 const response = await fetch(gasUrl, {
