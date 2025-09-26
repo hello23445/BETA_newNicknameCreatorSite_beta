@@ -460,6 +460,7 @@
             container.innerHTML = '';
             const userName = localStorage.getItem('userName') || '';
             const userToken = localStorage.getItem('userToken') || '';
+            const boughtItems = (localStorage.getItem('bought') || '').split(',');
             let hasProducts = false;
             rows.forEach((row, index) => {
                 if (index === 0) return; // Skip header
@@ -477,14 +478,23 @@
 
                 if (token === userToken) return; // Hide own products
 
-                const isAvailable = (status === 'Listed' || status === 'Выставлен') && qty > 0;
+                // New conditions: hide if already bought by the user
+                const isPremiumProduct = name === "Премиум";
+                const isBadgeProduct = name === "Бейдж \"👑Премиум\" к профилю";
+                const isSpecial = isPremiumProduct || isBadgeProduct;
+                if (isPremiumProduct && localStorage.getItem('premium') === 'yes') return;
+                if (isBadgeProduct && localStorage.getItem('badge1') === 'yes') return;
+                if (!isSpecial && boughtItems.includes(name)) return;
 
-                if (!isAvailable && buyer !== userName) return; // Do not show bought products unless bought by user
+                const isAvailable = (status === 'Выставлен' || status === 'Listed') && qty > 0;
+
+                // Changed: hide all unavailable items (do not show even own bought ones)
+                if (!isAvailable) return;
 
                 hasProducts = true;
 
-                const isPremium = name === "\"👑Premium\" badge for profile";
-                const isScam = isPremium && seller !== "Anonymous" && seller !== "Premium Seller";
+                const isPremium = name === "Бейдж \"👑Премиум\" к профилю";
+                const isScam = isPremium && seller !== "Аноним" && seller !== "Продавец премиума";
 
                 const card = document.createElement('div');
                 card.className = 'card';
@@ -500,7 +510,7 @@
                     <p>${desc}</p>
                 `;
                 if (isScam) {
-                    card.innerHTML += `<p style="font-weight: bold; color: red;">WARNING: THIS IS A SCAM!</p>`;
+                    card.innerHTML += `<p style="font-weight: bold; color: red;">ATTENTION: THIS IS A SCAM!</p>`;
                 }
 
                 const buyBtn = document.createElement('button');
@@ -519,7 +529,7 @@
                         }
                     };
                 } else {
-                    buyBtn.textContent = `Purchased for ${price}🪙`;
+                    buyBtn.textContent = `Bought for ${price}🪙`;
                     buyBtn.disabled = true;
                 }
                 card.appendChild(buyBtn);
@@ -558,8 +568,8 @@
                 const emptyDiv = document.createElement('div');
                 emptyDiv.id = 'empty-message';
                 emptyDiv.innerHTML = `
-                    <p>The store is empty! Start selling your product!</p>
-                    <button onclick="window.location.href='myshop_en.html'">Go to my store</button>
+                    <p>The shop is empty! Start selling your product!</p>
+                    <button onclick="window.location.href='myshop_en.html'">Go to my shop</button>
                 `;
                 container.appendChild(emptyDiv);
             }
