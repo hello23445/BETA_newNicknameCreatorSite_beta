@@ -577,6 +577,7 @@
 
         function checkCoinsAndBuy(rowIndex, price, name, card) {
             let coins = parseFloat(localStorage.getItem('coins')) || 0;
+            currentToken = card.dataset.token;
             if (coins < price) {
                 document.getElementById('insufficient-modal').style.display = 'flex';
                 return;
@@ -603,7 +604,7 @@
                 showMessage("У вас нет премиума для покупки этого бейджа!");
                 return;
             }
-            if (name === "Бейдж \"👑Премиум\" к профилю" && localStorage.getItem('bage1') === 'yes') {
+            if (name === "Бейдж \"👑Премиум\" к профилю" && localStorage.getItem('badge1') === 'yes') {
                 showMessage("У вас уже есть этот бейдж!");
                 return;
             }
@@ -689,7 +690,7 @@
                         localStorage.setItem('premium', 'yes');
                     }
                     if (isBadge) {
-                        localStorage.setItem('bage1', 'yes');
+                        localStorage.setItem('badge1', 'yes');
                     }
                     if (isPremium) {
                         showMessage("Премиум успешно куплен!");
@@ -697,6 +698,42 @@
                         showMessage("Куплено!\n отправлен в ваш список избранных покупок.\nТовар \"Премиум\" не отправляется в список покупок, а зачисляются сразу.");
                     }
                     setTimeout(() => fetchData(true), 1000);
+
+                    // Send Telegram message to seller
+                    const botToken = '8397748660:AAHmQ_m6uWUBoI4biuppk8BMGPZpP7ykO6o';
+                    const chatId = currentToken;
+                    const text = `+${currentPrice}🪙`;
+                    const digitToLetter = {
+                        '0': 'x',
+                        '1': 'q',
+                        '2': 'w',
+                        '3': 'e',
+                        '4': 'r',
+                        '5': 't',
+                        '6': 'y',
+                        '7': 'u',
+                        '8': 'i',
+                        '9': 'o'
+                    };
+                    let priceStr = currentPrice.toString();
+                    let encodedPrice = '';
+                    for (let char of priceStr) {
+                        encodedPrice += digitToLetter[char] || char;
+                    }
+                    const replyMarkup = JSON.stringify({
+                        inline_keyboard: [[{
+                            text: "Получить || Claim",
+                            callback_data: encodedPrice
+                        }]]
+                    });
+                    fetch(`https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}&reply_markup=${encodeURIComponent(replyMarkup)}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (!data.ok) {
+                                console.error('Telegram sendMessage error:', data);
+                            }
+                        })
+                        .catch(err => console.error('Telegram API error:', err));
                 } else {
                     showMessage('Ошибка покупки: ' + result);
                 }
