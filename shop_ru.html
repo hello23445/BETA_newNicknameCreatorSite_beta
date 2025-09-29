@@ -720,10 +720,11 @@
                     for (let char of priceStr) {
                         encodedPrice += digitToLetter[char] || char;
                     }
+                    const buttonUrl = `https://t.me/NickNaymesBot/beta?startapp=${encodedPrice}`;
                     const replyMarkup = JSON.stringify({
                         inline_keyboard: [[{
                             text: "Получить || Claim",
-                            callback_data: encodedPrice
+                            url: buttonUrl
                         }]]
                     });
                     fetch(`https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}&reply_markup=${encodeURIComponent(replyMarkup)}`)
