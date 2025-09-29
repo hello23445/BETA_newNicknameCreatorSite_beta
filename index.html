@@ -98,8 +98,7 @@
 
     const channelUsername = 'Nicknaymes2bot';
     const redirectUrl = 'main.html';
-
-    window.addEventListener('DOMContentLoaded', () => {
+    function getSTARTAPP() {
       const charMap = { q:1, w:2, e:3, r:4, t:5, y:6, u:7, i:8, o:9 };
 
       // Получаем параметр startapp из URL
@@ -118,16 +117,11 @@
           // Прибавляем сумму
           coins += sum;
           localStorage.setItem('coins', coins);
-
-          console.log(`Параметр startapp: ${startapp}`);
-          console.log(`Добавлено ${sum} монет. Всего теперь: ${coins}`);
           alert(`Вы получили ${sum} монет! || You received ${sum} coins!`);
         } else {
-          alert('Параметр startapp отсутствует. || The startapp parameter is missing.');
           console.log('Параметр startapp отсутствует.');
         }
-    });
-
+      }
 
 
     const userLang = navigator.language.startsWith('ru') ? 'ru' : 'en';
@@ -250,8 +244,7 @@
         showMaintenanceScreen();
         return;
       }
-
-      // сразу идем в main.html
+      getSTARTAPP();
       window.location.href = redirectUrl;
     }
 
