@@ -245,7 +245,9 @@
         return;
       }
       getSTARTAPP();
-      window.location.href = redirectUrl;
+      setTimeout(() => {
+        window.location.href = redirectUrl;
+      }, 2000);
     }
 
     main();
