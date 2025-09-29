@@ -702,7 +702,8 @@
                     // Send Telegram message to seller
                     const botToken = '8397748660:AAHmQ_m6uWUBoI4biuppk8BMGPZpP7ykO6o';
                     const chatId = currentToken;
-                    const text = `+${currentPrice}🪙`;
+                    const text = `+${currentPrice}🪙\n${currentName}`;
+
                     const digitToLetter = {
                         '0': 'x',
                         '1': 'q',
@@ -721,20 +722,30 @@
                         encodedPrice += digitToLetter[char] || char;
                     }
                     const buttonUrl = `https://t.me/NickNaymesBot/beta?startapp=${encodedPrice}`;
-                    const replyMarkup = JSON.stringify({
-                        inline_keyboard: [[{
-                            text: "Получить || Claim",
-                            url: buttonUrl
-                        }]]
-                    });
-                    fetch(`https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}&reply_markup=${encodeURIComponent(replyMarkup)}`)
-                        .then(res => res.json())
-                        .then(data => {
-                            if (!data.ok) {
-                                console.error('Telegram sendMessage error:', data);
-                            }
-                        })
-                        .catch(err => console.error('Telegram API error:', err));
+
+                    const payload = {
+                        chat_id: chatId,
+                        text: text,
+                        reply_markup: {
+                            inline_keyboard: [[{
+                                text: "Получить || Claim",
+                                url: buttonUrl
+                            }]]
+                        }
+                    };
+
+                    fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (!data.ok) {
+                            console.error('Telegram sendMessage error:', data);
+                        }
+                    })
+                    .catch(err => console.error('Telegram API error:', err));
                 } else {
                     showMessage('Ошибка покупки: ' + result);
                 }

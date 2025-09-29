@@ -106,18 +106,22 @@
       const startapp = Telegram.WebApp.initDataUnsafe.start_param;
 
       if (startapp) {
-          let sum = 0;
+          let decoded = '';
           for (let char of startapp.toLowerCase()) {
-          if (charMap.hasOwnProperty(char)) sum += charMap[char];
+            if (charMap.hasOwnProperty(char)) {
+              decoded += charMap[char];
+            }
           }
+
+          const amount = parseInt(decoded) || 0;
 
           // Получаем текущее количество монет из localStorage (или 0 если нет)
           let coins = parseInt(localStorage.getItem('coins')) || 0;
 
           // Прибавляем сумму
-          coins += sum;
+          coins += amount;
           localStorage.setItem('coins', coins);
-          alert(`Вы получили ${sum} монет! || You received ${sum} coins!`);
+          alert(`Вы получили ${amount} монет! || You received ${amount} coins!`);
         } else {
           console.log('Параметр startapp отсутствует.');
         }
