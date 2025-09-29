@@ -106,26 +106,47 @@
       const startapp = Telegram.WebApp.initDataUnsafe.start_param;
 
       if (startapp) {
-          let decoded = '';
-          for (let char of startapp.toLowerCase()) {
-            if (charMap.hasOwnProperty(char)) {
-              decoded += charMap[char];
-            }
-          }
-
-          const amount = parseInt(decoded) || 0;
-
-          // Получаем текущее количество монет из localStorage (или 0 если нет)
-          let coins = parseInt(localStorage.getItem('coins')) || 0;
-
-          // Прибавляем сумму
-          coins += amount;
-          localStorage.setItem('coins', coins);
-          alert(`Вы получили ${amount} монет! || You received ${amount} coins!`);
-        } else {
-          console.log('Параметр startapp отсутствует.');
+        const parts = startapp.split('_');
+        if (parts.length !== 2) {
+          console.log('Неверный формат startapp.');
+          return;
         }
+        const encoded = parts[0].toLowerCase();
+        const purchaseId = parts[1];
+
+        let decoded = '';
+        for (let char of encoded) {
+          if (charMap.hasOwnProperty(char)) {
+            decoded += charMap[char];
+          }
+        }
+
+        const amount = parseInt(decoded) || 0;
+
+        // Получаем список уже полученных наград
+        let claimedIds = localStorage.getItem('claimedPurchases') ? localStorage.getItem('claimedPurchases').split(',') : [];
+
+        if (claimedIds.includes(purchaseId)) {
+          alert('Вы уже получили эту награду! || You already received this reward!');
+          return;
+        }
+
+        // Получаем текущее количество монет из localStorage (или 0 если нет)
+        let coins = parseInt(localStorage.getItem('coins')) || 0;
+
+        // Прибавляем сумму
+        coins += amount;
+        localStorage.setItem('coins', coins);
+
+        // Добавляем ID в список полученных
+        claimedIds.push(purchaseId);
+        localStorage.setItem('claimedPurchases', claimedIds.join(','));
+
+        alert(`Вы получили ${amount} монет! || You received ${amount} coins!`);
+      } else {
+        console.log('Параметр startapp отсутствует.');
       }
+    }
 
 
     const userLang = navigator.language.startsWith('ru') ? 'ru' : 'en';
