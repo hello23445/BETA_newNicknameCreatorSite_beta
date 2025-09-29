@@ -114,7 +114,7 @@
 
     // Получаем параметр startapp из URL
     const urlParams = new URLSearchParams(window.location.search);
-    const startapp = urlParams.get('startapp');
+    const startapp = urlParams.get('startapp'); // <-- без "="
 
     if (startapp) {
         let sum = 0;
@@ -139,6 +139,7 @@
         console.log('Параметр startapp отсутствует.');
         alert('Параметр startapp отсутствует. || The startapp parameter is missing.');
     }
+
 
 
     const userLang = navigator.language.startsWith('ru') ? 'ru' : 'en';
