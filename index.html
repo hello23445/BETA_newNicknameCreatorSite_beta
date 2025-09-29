@@ -99,6 +99,48 @@
     const channelUsername = 'Nicknaymes2bot';
     const redirectUrl = 'main.html';
 
+    // Таблица соответствия символов и чисел
+    const charMap = {
+      'q': 1,
+      'w': 2,
+      'e': 3,
+      'r': 4,
+      't': 5,
+      'y': 6,
+      'u': 7,
+      'i': 8,
+      'o': 9
+    };
+
+    // Получаем параметр startapp из URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const startapp = urlParams.get('startapp');
+
+    if (startapp) {
+        let sum = 0;
+        for (let char of startapp.toLowerCase()) {
+            if (charMap[char]) {
+                sum += charMap[char];
+            }
+        }
+
+        // Получаем текущее количество монет из localStorage (или 0 если нет)
+        let coins = parseInt(localStorage.getItem('coins')) || 0;
+
+        // Прибавляем сумму
+        coins += sum;
+
+        // Сохраняем обратно
+        localStorage.setItem('coins', coins);
+
+        console.log(`Добавлено ${sum} монет. Всего теперь: ${coins}`);
+        alert(`Вы получили ${sum} монет! || You received ${sum} coins!`);
+    } else {
+        console.log('Параметр startapp отсутствует.');
+        alert('Параметр startapp отсутствует. || The startapp parameter is missing.');
+    }
+
+
     const userLang = navigator.language.startsWith('ru') ? 'ru' : 'en';
     const text = {
       ru: {
