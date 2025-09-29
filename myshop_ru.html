@@ -159,7 +159,7 @@
         const item = document.createElement("div");
         item.className = "item";
         item.textContent = name;
-        item.onclick = () => window.location.href = `https://t.me/sellertovarsbot?start${encodeURIComponent(name)}_${localStorage.getItem('lang') === 'ru' ? 'ru' : 'en'}`;
+        item.onclick = () => window.open(`https://t.me/sellertovarsbot?start${encodeURIComponent(name)}_${localStorage.getItem('lang') === 'ru' ? 'ru' : 'en'}`);
         namesBlock.appendChild(item);
       });
     }
