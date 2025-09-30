@@ -149,7 +149,7 @@
     <div class="container">
         <h1 id="h99">Enter your nickname or choose from the list</h1>
         <div class="input-group">
-            <input type="text" id="nickname-input" placeholder="Enter here" maxlength="18">
+            <textarea type="text" id="nickname-input" placeholder="Enter here" maxlength="18"></textarea>
             <button id="randomize" class="btn">Random</button>
             <button id="to-decorate" class="btn hidden">Decorate →</button>
         </div>
@@ -172,6 +172,9 @@
     <script>
         const APP_URL = 'https://script.google.com/macros/s/AKfycbzxxdiQbEBql6LIuK0PgYdV0DIbhvHwPFKbRWg8trSyzmeGVYdbHQXkq3rgyqFBuc19/exec';
         
+        if (localStorage.getItem('premium') !== 'true') {
+            document.getElementById('nickname-input').maxLength = 60;
+        }
         const presets = [
             ['SuperStar','ShadowKing','IcePhoenix','DarkKnight','ElectricDragon','MythicHero','AquaDragon','CyberGhost','MysticQueen','NightShade',
              'SolarFlare','LavaBeast','ZenithMage','NovaKnight','EchoHunter','TerraRider','SpectralNinja','BlazeWizard','StormSeer','VoidPrincess',

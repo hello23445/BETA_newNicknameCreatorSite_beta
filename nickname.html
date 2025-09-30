@@ -148,7 +148,8 @@
     <div class="container">
         <h1 id="h99">Введите ваш никнейм или выберите из списка</h1>
         <div class="input-group">
-            <input type="text" id="nickname-input" placeholder="Введите здесь" maxlength="18">
+            <textarea type="text" id="nickname-input" placeholder="Введите здесь" maxlength="18"></textarea>
+            <!-- <input type="text" id="nickname-input" placeholder="Введите здесь" maxlength="18"> -->
             <button id="randomize" class="btn">Случайный</button>
             <button id="to-decorate" class="btn hidden">Украсить →</button>
         </div>
@@ -171,6 +172,9 @@
     <script>
         const APP_URL = 'https://script.google.com/macros/s/AKfycbzxxdiQbEBql6LIuK0PgYdV0DIbhvHwPFKbRWg8trSyzmeGVYdbHQXkq3rgyqFBuc19/exec';
         
+        if (localStorage.getItem('premium') !== 'true') {
+            document.getElementById('nickname-input').maxLength = 60;
+        }
         const presets = [
             ['SuperStar','ShadowKing','IcePhoenix','DarkKnight','ElectricDragon','MythicHero','AquaDragon','CyberGhost','MysticQueen','NightShade',
              'SolarFlare','LavaBeast','ZenithMage','NovaKnight','EchoHunter','TerraRider','SpectralNinja','BlazeWizard','StormSeer','VoidPrincess',
