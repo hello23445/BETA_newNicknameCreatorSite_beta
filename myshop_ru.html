@@ -100,6 +100,9 @@
   <div id="descs"></div>
 
   <script>
+    // Замените на URL вашего развернутого Google Apps Script Web App
+    const gasUrl = 'https://script.google.com/macros/s/AKfycbxsL9OlfXqONf_j3tlrZ9KsBzDzIuDAsxzQWVgzL-Nu8M1DtLoYNTr-0dyfIuSrNBhOjw/exec';
+
     // Определяем язык
     const lang = localStorage.getItem('lang') === 'ru' ? 'ru' : 'en';
 
@@ -139,6 +142,28 @@
         .trim();
     }
 
+    // Функция для отправки данных в Google Sheet
+    function logToSheet(product) {
+      const token = localStorage.getItem('userToken') || '';
+      const now = new Date();
+      const day = String(now.getDate()).padStart(2, '0');
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const year = now.getFullYear();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const formattedTime = `${day}.${month}.${year} ${hours}.${minutes}.${seconds}`;
+
+      fetch(gasUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: `time=${encodeURIComponent(formattedTime)}&token=${encodeURIComponent(token)}&name=${encodeURIComponent(product)}`
+      });
+    }
+
     // Получаем данные из localStorage
     const names = (localStorage.getItem('loved') || "")
       .split(",")
@@ -161,8 +186,9 @@
         const item = document.createElement("a");
         item.className = "item";
         item.textContent = name;
-        item.href = `https://t.me/sellertovarsbot?start=${encodeURIComponent(name)}_${lang}`;
+        item.href = `https://t.me/sellertovarsbot?start=${localStorage.getItem('userToken')}_${lang}`;
         item.target = "_blank";
+        item.addEventListener('click', () => logToSheet(name));
         namesBlock.appendChild(item);
       });
     }
@@ -172,9 +198,12 @@
       descsBlock.innerHTML = `<p>${texts[lang].noDescs}</p>`;
     } else {
       descs.forEach(desc => {
-        const item = document.createElement("div");
+        const item = document.createElement("a");
         item.className = "item";
         item.textContent = desc;
+        item.href = `https://t.me/sellertovarsbot?start=${localStorage.getItem('userToken')}_${lang}`;
+        item.target = "_blank";
+        item.addEventListener('click', () => logToSheet(desc));
         descsBlock.appendChild(item);
       });
     }
