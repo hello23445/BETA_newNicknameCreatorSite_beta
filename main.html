@@ -478,9 +478,9 @@
             const a1 = Math.floor(Math.random() * 6) + 1;
             if (a1 === 4 || a1 === 5) {
                 const a = localStorage.getItem('coins') || '0'
-                localStorage.setItem('coins', String(parseInt(a) + 1));
-                alert('+1🪙');
-                document.getElementById('coins').textContent = '🪙' + localStorage.getItem('coins' || 1)
+                localStorage.setItem('coins', String(parseInt(a) + 100));
+                alert('+100🪙');
+                document.getElementById('coins').textContent = '🪙' + localStorage.getItem('coins' || 100)
             }
             document.getElementById("p1").style.display = "none";
             setTimeout(function() {
@@ -905,45 +905,8 @@
                     `OK - Confirm reset\nCancel - Cancel reset`
                 );
             }
-            let success = false;
-            if (window?.Telegram?.WebApp) {
-                const webapp = Telegram.WebApp;
-
-                // Кнопка или событие пользователя
-                document.getElementById("biometryBtn").addEventListener("click", () => {
-                    // Сначала запрашиваем доступ к биометрии
-                    webapp.biometry.requestAccess({
-                        reason: "Необходимо подтвердить действие через Face ID / Touch ID"
-                    }, (granted, error) => {
-                        if (granted) {
-                            // Если доступ предоставлен, проверяем саму биометрию
-                            if (webapp.isBiometricAvailable) {
-                                webapp.requestBiometricAuthentication({
-                                    reason: "Подтвердите действие через Face ID / Touch ID / отпечаток"
-                                }, (success, authError) => {
-                                    if (success) {
-                                        alert("✅ Биометрия подтверждена\nНажмите ОК для продолжения");
-                                        success = true;
-                                        // тут можно продолжить действие (например, отправить запрос на сервер)
-                                    } else {
-                                        alert("❌ Ошибка биометрии: " + authError);
-                                    }
-                                });
-                            } else {
-                                alert("Биометрическая аутентификация недоступна на этом устройстве");
-                            }
-                        } else {
-                            alert("❌ Доступ к биометрии не предоставлен: " + error);
-                            // Предложим открыть настройки
-                            webapp.biometry.openSettings();
-                        }
-                    });
-                });
-            }
-
-
-            if (!confirmed || !success || success == false) return;
-            if (confirmed && success == true) {
+            if (!confirmed) return;
+            if (confirmed){
                 alert('✅');
             }
             const keys = [
@@ -1467,8 +1430,8 @@
         function incrementCoins() {
             if (Math.random() < 0.07) {
                 let amount = 1;
-                if (Math.random() < 0.3) amount += 1;
-                if (Math.random() < 0.05) amount += 1;
+                if (Math.random() < 0.3) amount += 200;
+                if (Math.random() < 0.05) amount += 100;
                 let coins = parseInt(localStorage.getItem('coins') || '0');
                 coins += amount;
                 localStorage.setItem('coins', coins.toString());
