@@ -345,8 +345,8 @@
     <!-- More modal -->
     <div id="more-modal" class="modal">
         <div class="modal-content">
-            <button id="details" class="details-btn">More about the product</button>
-            <button id="report" class="report-btn">Report the seller</button>
+            <button id="details" class="details-btn">Product Details</button>
+            <button id="report" class="report-btn">Report Seller</button>
             <button id="close-more" class="close-btn">Close</button>
         </div>
     </div>
@@ -354,25 +354,24 @@
     <!-- Report modal -->
     <div id="report-modal" class="modal">
         <div class="modal-content">
-            <h3>Select or enter the reason for the complaint</h3>
+            <h3>Select or Enter Report Reason</h3>
             <select id="report-reason" style="background-color: darkblue;">
                 <option value="">Select reason...</option>
                 <option value="Fraud">Fraud</option>
                 <option value="Deception">Deception</option>
                 <option value="Pornography">Pornography</option>
                 <option value="Insult">Insult</option>
-                <option value="Violation of laws">Violation of laws</option>
-                <option value="Violation of Telegram rules">Violation of Telegram rules</option>
+                <option value="Law Violation">Law Violation</option>
+                <option value="Telegram Rules Violation">Telegram Rules Violation</option>
                 <option value="Spam">Spam</option>
                 <option value="Phishing">Phishing</option>
-                <option value="Propaganda of violence">Propaganda of violence</option>
-                <option value="Racism or discrimination">Racism or discrimination</option>
+                <option value="Violence Propaganda">Violence Propaganda</option>
+                <option value="Racism or Discrimination">Racism or Discrimination</option>
                 <option value="Terrorism">Terrorism</option>
                 <option value="Other">Other</option>
-                <option value="Does not violate the law, but needs to be removed">Does not violate the law, but needs to be removed</option>
-
+                <option value="Does not violate law, but needs to be removed">Does not violate law, but needs to be removed</option>
             </select>
-            <textarea id="report-input" rows="4" placeholder="Describe the problem (optional)..."></textarea>
+            <textarea id="report-input" rows="4" placeholder="Describe the issue (optional)..."></textarea>
             <button id="submit-report" class="submit-btn">Submit</button>
             <button id="cancel-report" class="cancel-btn">Cancel</button>
         </div>
@@ -390,7 +389,7 @@
     <!-- Insufficient modal -->
     <div id="insufficient-modal" class="modal">
         <div class="modal-content">
-            <p id="insufficient-text">Insufficient coins!<br>Coins can be obtained by generating something in this app.</p>
+            <p id="insufficient-text">Insufficient coins!<br>You can earn coins by generating something in this app.</p>
             <button id="close-insufficient" class="close-btn">OK</button>
         </div>
     </div>
@@ -398,7 +397,7 @@
     <!-- Details modal -->
     <div id="details-modal" class="modal">
         <div class="modal-content">
-            <h3 style="text-align: center; margin-bottom: 20px;">More about the product</h3>
+            <h3 style="text-align: center; margin-bottom: 20px;">Product Details</h3>
             <div id="details-content"></div>
             <button id="close-details" class="close-btn">Close</button>
         </div>
@@ -478,23 +477,23 @@
 
                 if (token === userToken) return; // Hide own products
 
-                // New conditions: hide if already purchased by the user
-                const isPremiumProduct = name === "Premium";
-                const isBadgeProduct = name === "Badge \"👑Premium\" to profile";
+                // New conditions: hide if already bought by user
+                const isPremiumProduct = name === "Премиум";
+                const isBadgeProduct = name === "Бейдж \"👑Премиум\" к профилю";
                 const isSpecial = isPremiumProduct || isBadgeProduct;
                 if (isPremiumProduct && localStorage.getItem('premium') === 'yes') return;
                 if (isBadgeProduct && localStorage.getItem('badge1') === 'yes') return;
                 if (!isSpecial && boughtItems.includes(name)) return;
 
-                const isAvailable = (status === 'Listed' || status === 'Listed') && qty > 0;
+                const isAvailable = (status === 'Выставлен' || status === 'Listed') && qty > 0;
 
-                // Changed: hide all unavailable items (do not show even your own purchased ones)
+                // Changed: hide all unavailable items (don't even show own bought ones)
                 if (!isAvailable) return;
 
                 hasProducts = true;
 
-                const isPremium = name === "Badge \"👑Premium\" to profile";
-                const isScam = isPremium && seller !== "Anonymous" && seller !== "Premium Seller";
+                const isPremium = name === "Бейдж \"👑Премиум\" к профилю";
+                const isScam = isPremium && seller !== "Аноним" && seller !== "Продавец премиума";
 
                 const card = document.createElement('div');
                 card.className = 'card';
@@ -510,7 +509,7 @@
                     <p>${desc}</p>
                 `;
                 if (isScam) {
-                    card.innerHTML += `<p style="font-weight: bold; color: red;">ATTENTION: THIS IS A SCAM!</p>`;
+                    card.innerHTML += `<p style="font-weight: bold; color: red;">WARNING: THIS IS A SCAM!</p>`;
                 }
 
                 const buyBtn = document.createElement('button');
@@ -569,7 +568,7 @@
                 emptyDiv.id = 'empty-message';
                 emptyDiv.innerHTML = `
                     <p>The shop is empty! Start selling your product!</p>
-                    <button onclick="window.location.href='myshop_en.html'">Go to my shop</button>
+                    <button onclick="window.location.href='myshop_ru.html'">Go to my shop</button>
                 `;
                 container.appendChild(emptyDiv);
             }
@@ -588,23 +587,23 @@
                 showMessage("You cannot buy your own product!");
                 return;
             }
-            const isSpecial = name === "Premium" || name === "Badge \"👑Premium\" to profile";
+            const isSpecial = name === "Премиум" || name === "Бейдж \"👑Премиум\" к профилю";
             if (!isSpecial) {
                 const boughtItems = (localStorage.getItem('bought') || '').split(',');
                 if (boughtItems.includes(name)) {
-                    showMessage("This product is already in the list of purchased items!");
+                    showMessage("This product is already in your purchased items list!");
                     return;
                 }
             }
-            if (name === "Premium" && localStorage.getItem('premium') === 'yes') {
+            if (name === "Премиум" && localStorage.getItem('premium') === 'yes') {
                 showMessage("You already have premium!");
                 return;
             }
-            if (name === "Badge \"👑Premium\" to profile" && localStorage.getItem('premium') !== 'yes') {
-                showMessage("You do not have premium to buy this badge!");
+            if (name === "Бейдж \"👑Премиум\" к профилю" && localStorage.getItem('premium') !== 'yes') {
+                showMessage("You don't have premium to buy this badge!");
                 return;
             }
-            if (name === "Badge \"👑Premium\" to profile" && localStorage.getItem('badge1') === 'yes') {
+            if (name === "Бейдж \"👑Премиум\" к профилю" && localStorage.getItem('badge1') === 'yes') {
                 showMessage("You already have this badge!");
                 return;
             }
@@ -662,7 +661,7 @@
                         qty--;
                         card.dataset.qty = qty;
                         if (qty <= 0) {
-                            card.dataset.status = 'Bought';
+                            card.dataset.status = 'Куплено';
                             card.dataset.buyer = userName;
                             buyBtn.textContent = 'Bought';
                             buyBtn.disabled = true;
@@ -679,8 +678,8 @@
                             buyBtn.textContent = `Buy 1/${qty} for ${currentPrice}🪙`;
                         }
                     }
-                    const isBadge = currentName === "Badge \"👑Premium\" to profile";
-                    const isPremium = currentName === "Premium";
+                    const isBadge = currentName === "Бейдж \"👑Премиум\" к профилю";
+                    const isPremium = currentName === "Премиум";
                     if (!isBadge && !isPremium) {
                         let bought = localStorage.getItem('bought') || '';
                         bought += (bought ? ',' : '') + currentName;
@@ -695,7 +694,7 @@
                     if (isPremium) {
                         showMessage("Premium successfully purchased!");
                     } else {
-                        showMessage("Bought!\n Sent to your list of favorite purchases.\nThe \"Premium\" product is not sent to the purchase list, but is credited immediately.");
+                        showMessage("Purchased!\n Sent to your favorites purchases list.\n\"Premium\" item is not sent to the purchases list, but credited immediately.");
                     }
                     setTimeout(() => fetchData(true), 1000);
 
@@ -731,7 +730,7 @@
                         text: text,
                         reply_markup: {
                             inline_keyboard: [[{
-                                text: "Claim",
+                                text: "Claim || Claim",
                                 url: buttonUrl
                             }]]
                         }
@@ -823,7 +822,7 @@
             content.innerHTML = '';
             
             const items = [
-                {label: 'Placement date', value: currentDate},
+                {label: 'Listing Date', value: currentDate},
                 {label: 'Seller', value: currentSeller},
                 {label: 'Product', value: currentName},
                 {label: 'Price', value: currentPrice},
@@ -898,12 +897,12 @@
                 })
                 .then(res => res.text())
                 .then(() => {
-                    showMessage('Complaint sent.');
+                    showMessage('Report submitted.');
                     document.getElementById('report-modal').style.display = 'none';
                 })
                 .catch(err => console.error(err));
             } else {
-                showMessage('Select or enter the reason for the complaint!');
+                showMessage('Select or enter a report reason!');
             }
         };
 
