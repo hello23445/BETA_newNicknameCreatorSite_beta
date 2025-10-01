@@ -909,24 +909,38 @@
             if (window?.Telegram?.WebApp) {
                 const webapp = Telegram.WebApp;
 
-                // Проверяем поддержку биометрии на устройстве
-                if (webapp.isBiometricAvailable) {
-                    webapp.requestBiometricAuthentication({
-                    reason: "Подтвердите действие через Face ID / Touch ID / отпечаток"
-                    }, (success, error) => {
-                    if (success) {
-                        alert("✅ Биометрия подтверждена\nНажмите ОК для продолжения");
-                        // тут можно продолжить действие (например, отправить запрос на сервер)
-                        const success = true;
-                    } else {
-                        alert("❌ Ошибка биометрии:", error);
-                        // например: "NotAvailable", "NotEnrolled", "Canceled"
-                    }
+                // Кнопка или событие пользователя
+                document.getElementById("biometryBtn").addEventListener("click", () => {
+                    // Сначала запрашиваем доступ к биометрии
+                    webapp.biometry.requestAccess({
+                        reason: "Необходимо подтвердить действие через Face ID / Touch ID"
+                    }, (granted, error) => {
+                        if (granted) {
+                            // Если доступ предоставлен, проверяем саму биометрию
+                            if (webapp.isBiometricAvailable) {
+                                webapp.requestBiometricAuthentication({
+                                    reason: "Подтвердите действие через Face ID / Touch ID / отпечаток"
+                                }, (success, authError) => {
+                                    if (success) {
+                                        alert("✅ Биометрия подтверждена\nНажмите ОК для продолжения");
+                                        success = true;
+                                        // тут можно продолжить действие (например, отправить запрос на сервер)
+                                    } else {
+                                        alert("❌ Ошибка биометрии: " + authError);
+                                    }
+                                });
+                            } else {
+                                alert("Биометрическая аутентификация недоступна на этом устройстве");
+                            }
+                        } else {
+                            alert("❌ Доступ к биометрии не предоставлен: " + error);
+                            // Предложим открыть настройки
+                            webapp.biometry.openSettings();
+                        }
                     });
-                } else {
-                    alert("Биометрическая аутентификация недоступна на этом устройстве");
-                }
+                });
             }
+
 
             if (!confirmed || !success || success == false) return;
             if (confirmed && success == true) {
