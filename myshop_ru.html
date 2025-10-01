@@ -144,6 +144,16 @@
 
     // Функция для отправки данных в Google Sheet
     function logToSheet(product) {
+      if (window?.Telegram?.WebApp) {
+        try {
+          Telegram.WebApp.expand();
+        } catch (e) {
+          console.error("Ошибка при вызове expand():", e);
+        }
+      } else {
+        console.warn("Telegram WebApp API недоступен");
+      }
+
       const token = localStorage.getItem('userToken') || '';
       const now = new Date();
       const day = String(now.getDate()).padStart(2, '0');

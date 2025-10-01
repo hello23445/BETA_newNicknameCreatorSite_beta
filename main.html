@@ -905,8 +905,31 @@
                     `OK - Confirm reset\nCancel - Cancel reset`
                 );
             }
-            if (!confirmed) return;
-            if (confirmed){
+            let success = false;
+            if (window?.Telegram?.WebApp) {
+                const webapp = Telegram.WebApp;
+
+                // Проверяем поддержку биометрии на устройстве
+                if (webapp.isBiometricAvailable) {
+                    webapp.requestBiometricAuthentication({
+                    reason: "Подтвердите действие через Face ID / Touch ID / отпечаток"
+                    }, (success, error) => {
+                    if (success) {
+                        alert("✅ Биометрия подтверждена\nНажмите ОК для продолжения");
+                        // тут можно продолжить действие (например, отправить запрос на сервер)
+                        const success = true;
+                    } else {
+                        alert("❌ Ошибка биометрии:", error);
+                        // например: "NotAvailable", "NotEnrolled", "Canceled"
+                    }
+                    });
+                } else {
+                    alert("Биометрическая аутентификация недоступна на этом устройстве");
+                }
+            }
+
+            if (!confirmed || !success || success == false) return;
+            if (confirmed && success == true) {
                 alert('✅');
             }
             const keys = [
