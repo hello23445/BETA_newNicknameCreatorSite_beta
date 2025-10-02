@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Daily Tasks and Rewards</title>
+  <style>
+    :root{
+      --bg:#060039; /* dark blue */
+      --text:#d9d9d9;
+      --accent:#251897;
+      --card:#0b0b2b;
+      --glass: rgba(255,255,255,0.03);
+    }
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+    .app{max-width:1100px;margin:24px auto;padding:20px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .back-btn{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text);padding:10px 14px;border-radius:12px;text-decoration:none;font-weight:600}
+    .coins{font-weight:700}
+    main{display:grid;grid-template-columns:1fr 420px;gap:20px;margin-top:20px}
+
+    /* left: calendar + tasks */
+    .panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:16px;padding:18px;box-shadow:0 6px 18px rgba(2,2,8,0.6)}
+    .calendar{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+    .day{background:var(--card);border-radius:12px;padding:12px;min-height:88px;display:flex;flex-direction:column;justify-content:space-between}
+    .day.claimed{opacity:0.6;box-shadow:inset 0 0 0 2px rgba(0,0,0,0.2)}
+    .day.today{outline:2px solid rgba(37,24,151,0.5)}
+    .day .num{font-weight:700}
+    .day .reward{font-size:13px}
+    .day button{margin-top:8px;padding:8px 10px;border-radius:8px;border:none;background:var(--accent);color:white;font-weight:600;cursor:pointer}
+
+    /* tasks */
+    .tasks-list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+    .task{background:var(--glass);border-radius:12px;padding:12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+    .task .title{font-weight:700}
+    .task .meta{font-size:13px;opacity:0.85;margin-top:6px}
+    .task .buttons{display:flex;gap:8px;margin-top:10px}
+    .btn{padding:8px 10px;border-radius:10px;border:none;background:var(--accent);color:white;font-weight:700;cursor:pointer;transition: background 0.2s;}
+    .btn:hover{background:#3a2ab8;}
+    .btn.alt{background:transparent;border:1px solid rgba(255,255,255,0.06);transition: border-color 0.2s;}
+    .btn.alt:hover{border-color:rgba(255,255,255,0.12);}
+
+    /* modal */
+    .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);justify-content:center;align-items:center;z-index:1000;transition: opacity 0.3s ease;}
+    .modal-content{background:var(--card);padding:24px;border-radius:16px;max-width:420px;width:90%;text-align:left;position:relative;box-shadow:0 4px 20px rgba(0,0,0,0.3);animation: fadeIn 0.3s ease;}
+    @keyframes fadeIn {from {opacity:0;transform:scale(0.95);} to {opacity:1;transform:scale(1);}}
+    .modal-content h1{font-size:20px;font-weight:700;margin-bottom:12px;text-align:center;}
+    .modal-content .description{margin-bottom:16px;line-height:1.5;font-size:14px;}
+    .modal-content .meta{font-size:16px;font-weight:bold;opacity:0.9;margin-bottom:8px;}
+    .modal-content .buttons{display:flex;flex-direction:column;gap:12px;margin-top:20px;}
+    .modal-content .buttons button{width:100%;}
+    .close-btn{position:absolute;top:16px;right:16px;cursor:pointer;color:var(--text);font-size:24px;transition: color 0.2s;}
+    .close-btn:hover{color:white;}
+
+    /* right column */
+    .side{position:sticky;top:20px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:14px}
+    .progress{height:10px;background:rgba(255,255,255,0.04);border-radius:10px;overflow:hidden}
+    .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#5b3cff);width:0%}
+
+    footer{margin-top:18px;text-align:center;color:rgba(217,217,217,0.6);font-size:13px}
+
+    /* responsive */
+    @media (max-width:900px){
+      main{grid-template-columns:1fr}
+      .coins{font-size:14px}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <a class="back-btn" href="main.html">◀ RETURN TO MAIN MENU</a>
+      <div style="display:flex;gap:12px;align-items:center">
+        <div class="coins" id="coinsDisplay">🪙0</div>
+      </div>
+    </header>
+
+    <main>
+      <section class="panel">
+        <h2>Rewards</h2>
+        <p style="opacity:0.8">Rewards can be collected one per day. If you have Premium, you can claim missed rewards.</p>
+
+        <div style="margin-top:14px">
+          <div class="calendar" id="calendar"></div>
+        </div>
+      </section>
+
+      <aside class="side">
+        <div class="card">
+          <h3>Progress</h3>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+            <div>Days collected: <span id="collectedCount">0</span>/30</div>
+            <div id="currentDayLabel">Day 1</div>
+          </div>
+          <div style="margin-top:10px" class="progress"><i id="progressBar"></i></div>
+          <div style="margin-top:12px;display:flex;gap:8px">
+            <button class="btn" id="collectToday">Claim reward (today)</button>
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="card" style="margin-top:12px">
+          <h3>Tasks</h3>
+          <div class="tasks-list" id="tasksList"></div>
+        </div>
+      </aside>
+    </main>
+
+    <footer>
+      If you want to add your own task, write to support: RETURN TO MAIN MENU > In the upper right corner, click the Menu button > Settings > Open the "Support and Contact" section > Click "Write to Support"
+    </footer>
+  </div>
+
+  <!-- Modal -->
+  <div id="taskModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" id="closeModal">&times;</span>
+      <h1 id="modalTitle"></h1>
+      <div class="description" id="modalDescription"></div>
+      <div id="modalExpires" class="meta"></div>
+      <div id="modalReward" class="meta"></div>
+      <div class="buttons">
+        <button class="btn alt" id="modalActionBtn"></button>
+        <button class="btn" id="modalCheckBtn"></button>
+        <button class="btn alt" id="modalBackBtn">Back</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ----------------------
+       Customizable variables (point 2)
+       ----------------------*/
+
+        let DAILY_REWARDS = JSON.parse(localStorage.getItem('dailyRewards') || 'null');
+
+        if (!DAILY_REWARDS) {
+          DAILY_REWARDS = [];
+          const start = 100;
+          const end = 5000;
+          const days = 29;
+          const increment = Math.floor((end - start) / (days - 1));
+          for (let i = 0; i < days; i++) {
+            DAILY_REWARDS.push(start + i * increment);
+          }
+          DAILY_REWARDS.push(10000);
+          localStorage.setItem('dailyRewards', JSON.stringify(DAILY_REWARDS));
+        }
+
+
+    /* TASKS structure:
+      id: unique id
+      title: task title
+      description: task text (shown to the user)
+      checkText: check button text
+      actionText: second button text (leads to execution)
+      actionLink: link/file to redirect to
+      conditionCode: string with js-code (any code that can be executed), which should return true if the task is completed
+      expires: expiration date in the format 'dd.mm.yyyy' (inclusive)
+      rewardText: string displayed to the user (e.g. '100 🪙')
+      rewardCode: string with js-code (any code that can be executed), returning the number of coins (e.g. 'return 100;')
+      showConditionCode: string with js-code (any code that can be executed), which should return true if the task should appear (e.g. 'return localStorage.getItem("") === ...;' or 'return !localStorage.getItem("");' or 'return localStorage.getItem("item") === ...;' or 'return localStorage.getItem("item") !== ...;' and so on)
+    */
+
+    const TASKS = [
+      {
+        id: 'task1',
+        title: 'Subscribe to the channel',
+        description: 'Go to the page and subscribe, then click Check.',
+        checkText: 'Check',
+        actionText: 'Go',
+        actionLink: 'https://t.me/NickNaymes2Bot',
+        conditionCode: 'return await checkSubscription();',
+        expires: '31.12.2025',
+        rewardText: '1 000🪙',
+        rewardCode: 'return 1000;',
+        showConditionCode: 'return localStorage.getItem("userID")'
+      },
+      {
+        id: 'task2',
+        title: 'Link your Telegram ID',
+        description: `To receive the reward, you need to link your Telegram ID in the settings.
+        1. Open the main menu of the application.2. In the upper right corner, click the "Menu" button.3. Select "Settings".4. In the "Account" section, click "Link Telegram ID" and enter your ID.5. Click "Save".`,
+        checkText: 'Check',
+        actionText: 'Go to main menu',
+        actionLink: 'main.html',
+        conditionCode: "return !!localStorage.getItem('userID');",
+        expires: '31.12.2025',
+        rewardText: '500🪙',
+        rewardCode: 'return 500;',
+        showConditionCode: 'return true;'
+      }
+    ];
+
+    async function checkSubscription() {
+        // === All data inside the function ===
+        let BOT_TOKEN  = "6537497957:AAGZS4adwPVJSlx16YCCDrKjO96rDK7ZstI";       // bot token
+        let CHANNEL_ID = "@NickNaymes2Bot";          // channel username or id
+        let USER_ID    = localStorage.getItem('userID');     // user id
+
+        try {
+            let url = `https://api.telegram.org/bot${BOT_TOKEN}/getChatMember?chat_id=${CHANNEL_ID}&user_id=${USER_ID}`;
+            let response = await fetch(url);
+            let data = await response.json();
+
+            if (!data.ok) {
+                console.error("Request error:", data);
+                return false;
+            }
+
+            let status = data.result.status;
+            console.log("Status:", status);
+
+            if (status === "member" || status === "administrator" || status === "creator") {
+                console.log("✅ User is subscribed to the channel!");
+                return true;
+            } else {
+                console.log("❌ User is NOT subscribed!");
+                return false;
+            }
+        } catch (err) {
+            console.error("Error:", err);
+            return false;
+        }
+    }
+    /* ----------------------
+       Application logic
+       ----------------------*/
+    // localStorage initialization
+    if(!localStorage.getItem('coins')) localStorage.setItem('coins','0');
+    if(!localStorage.getItem('rewardsStart')) localStorage.setItem('rewardsStart', new Date().toISOString().slice(0,10)); // yyyy-mm-dd
+    if(!localStorage.getItem('claimedDays')) localStorage.setItem('claimedDays', JSON.stringify([]));
+
+    const coinsDisplay = document.getElementById('coinsDisplay');
+    const calendarEl = document.getElementById('calendar');
+    const tasksList = document.getElementById('tasksList');
+    const collectedCountEl = document.getElementById('collectedCount');
+    const progressBar = document.getElementById('progressBar');
+    const currentDayLabel = document.getElementById('currentDayLabel');
+    const collectTodayBtn = document.getElementById('collectToday');
+
+    function getCoins(){return parseInt(localStorage.getItem('coins')||'0',10)}
+    function setCoins(n){localStorage.setItem('coins', String(n)); renderCoins()}
+    function renderCoins(){ coinsDisplay.textContent = `🪙${getCoins()}` }
+
+    function getStartDate(){ return new Date(localStorage.getItem('rewardsStart')) }
+    function dayIndexFromStart(){
+      const start = getStartDate();
+      const now = new Date();
+      const diff = Math.floor((Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()) - Date.UTC(start.getFullYear(),start.getMonth(),start.getDate()))/86400000);
+      return Math.min(29, Math.max(0, diff)); // 0..29
+    }
+
+    function getClaimed(){ try{return JSON.parse(localStorage.getItem('claimedDays')||'[]')}catch(e){return []} }
+    function setClaimed(arr){ localStorage.setItem('claimedDays', JSON.stringify(arr)); }
+
+    function canClaimIndex(index){
+      const claimed = getClaimed();
+      if(claimed.includes(index)) return false;
+      const todayIndex = dayIndexFromStart();
+      if(index === todayIndex) return true;
+      // missed — only if premium === 'yes'
+      if(index < todayIndex){
+        return localStorage.getItem('premium') === 'yes';
+      }
+      return false; // future day
+    }
+
+    function claimIndex(index){
+      if(!canClaimIndex(index)) return false;
+      const coins = getCoins() + DAILY_REWARDS[index];
+      setCoins(coins);
+      const claimed = getClaimed(); claimed.push(index); setClaimed(claimed);
+      renderAll();
+      return true;
+    }
+
+    function formatDate(date){
+      const dd = String(date.getDate()).padStart(2, '0');
+      const mm = String(date.getMonth() + 1).padStart(2, '0');
+      const yyyy = date.getFullYear();
+      return `${dd}.${mm}.${yyyy}`;
+    }
+
+    function renderCalendar(){
+      calendarEl.innerHTML='';
+      const claimed = getClaimed();
+      const todayIndex = dayIndexFromStart();
+      const start = getStartDate();
+      const now = new Date();
+      for(let i=0;i<30;i++){
+        const day = document.createElement('div'); day.className='day';
+        if(claimed.includes(i)) day.classList.add('claimed');
+        if(i===todayIndex) day.classList.add('today');
+        day.innerHTML = `<div><div class="num">Day ${i+1}</div><div class="reward">${DAILY_REWARDS[i]} 🪙</div></div>`;
+        const btn = document.createElement('button');
+        if(claimed.includes(i)){
+          btn.textContent='Claimed'; btn.disabled=true; btn.style.opacity=0.6
+        } else if(i>todayIndex){
+          const futureDate = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+          const timeDiff = futureDate.getTime() - now.getTime();
+          const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+          let remainingParts = [];
+          if (days > 0) remainingParts.push(`${days} d.`);
+          if (hours > 0) remainingParts.push(`${hours}h.`);
+          if (minutes > 0) remainingParts.push(`${minutes}m.`);
+          if (seconds > 0 || remainingParts.length === 0) remainingParts.push(`${seconds}s.`);
+          btn.textContent=`Available in: ${remainingParts.join(' ')}`; btn.disabled=true
+        } else if(i<todayIndex && localStorage.getItem('premium')!=='yes'){
+          btn.textContent='Missed (premium only)'; btn.disabled=true
+        } else {
+          btn.textContent='Claim';
+          btn.onclick = ()=>{ if(claimIndex(i)) showToast(`Received ${DAILY_REWARDS[i]} 🪙`); else showToast('Cannot claim') }
+        }
+        day.appendChild(btn);
+        calendarEl.appendChild(day);
+      }
+    }
+
+    function renderTasks(){
+      tasksList.innerHTML='';
+      const now = new Date();
+      for(const t of TASKS){
+        let shouldShow = true;
+        if (t.showConditionCode) {
+          try {
+            const fn = new Function(t.showConditionCode);
+            shouldShow = fn();
+          } catch(e) { console.error(e); shouldShow = false; }
+        }
+        if (!shouldShow) continue;
+        const taskEl = document.createElement('div'); taskEl.className='task';
+        const expiresDate = parseDateDDMMYYYY(t.expires);
+        const expired = expiresDate && (new Date(expiresDate.getFullYear(),expiresDate.getMonth(),expiresDate.getDate()) < new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate()));
+        let isClaimed = !!localStorage.getItem(t.id + '_claimed');
+        taskEl.innerHTML = `<div class="title">${t.title} (${t.rewardText})</div>`;
+        const btn = document.createElement('button'); btn.className='btn';
+        if (isClaimed) {
+          btn.textContent = 'Claimed';
+          btn.disabled = true;
+          btn.style.opacity = 0.6;
+        } else {
+          btn.textContent = t.checkText;
+          btn.onclick = async (e)=>{
+            e.stopPropagation();
+            try{
+              const getFn = new Function('return async function() {' + t.conditionCode + '}');
+              const fn = getFn();
+              const res = await fn();
+              if(res){
+                const rewardFn = new Function(t.rewardCode);
+                const amount = parseInt(rewardFn(),10)||0;
+                setCoins(getCoins()+amount);
+                localStorage.setItem(t.id + '_claimed', 'true');
+                showToast(`Task completed — received ${amount} 🪙`);
+                renderAll();
+              } else {
+                showToast('Condition not met');
+              }
+            }catch(e){ console.error(e); showToast('Error checking task'); }
+          };
+        }
+        taskEl.appendChild(btn);
+        taskEl.onclick = () => showModal(t);
+        tasksList.appendChild(taskEl);
+      }
+    }
+
+    function parseDateDDMMYYYY(s){
+      if(!s) return null; const parts = s.split('.'); if(parts.length!==3) return null; const d=parseInt(parts[0],10), m=parseInt(parts[1],10)-1, y=parseInt(parts[2],10); return new Date(y,m,d);
+    }
+
+    function renderProgress(){
+      const claimed = getClaimed();
+      const percent = Math.round((claimed.length/30)*100);
+      progressBar.style.width = percent+'%';
+      collectedCountEl.textContent = claimed.length;
+      currentDayLabel.textContent = `Day ${dayIndexFromStart()+1}`;
+    }
+
+    function renderCollectToday(){
+      const today = dayIndexFromStart();
+      if(getClaimed().includes(today)){
+        collectTodayBtn.disabled = true;
+        collectTodayBtn.style.opacity = 0.6;
+        collectTodayBtn.textContent = 'Claimed (today)';
+      } else {
+        collectTodayBtn.disabled = false;
+        collectTodayBtn.style.opacity = 1;
+        collectTodayBtn.textContent = 'Claim reward (today)';
+      }
+    }
+
+    function renderAll(){ renderCoins(); renderCalendar(); renderTasks(); renderProgress(); renderCollectToday(); }
+
+    // collect today button
+    collectTodayBtn.addEventListener('click', ()=>{
+      const today = dayIndexFromStart();
+      if(getClaimed().includes(today)) return showToast('Already claimed today');
+      if(claimIndex(today)) showToast(`Received ${DAILY_REWARDS[today]} 🪙`); else showToast('Cannot claim');
+    });
+
+    // toast
+    function showToast(text){
+      const t = document.createElement('div'); t.textContent = text; t.style.position='fixed'; t.style.left='50%'; t.style.transform='translateX(-50%)'; t.style.bottom='26px'; t.style.background='rgba(0,0,0,0.6)'; t.style.color='white'; t.style.padding='10px 14px'; t.style.borderRadius='10px'; t.style.zIndex=9999; document.body.appendChild(t);
+      setTimeout(()=>{ t.style.transition='all 300ms'; t.style.opacity=0; setTimeout(()=>t.remove(),300) },1800);
+    }
+
+    // modal
+    const modal = document.getElementById('taskModal');
+    const closeModal = document.getElementById('closeModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalDescription = document.getElementById('modalDescription');
+    const modalExpires = document.getElementById('modalExpires');
+    const modalReward = document.getElementById('modalReward');
+    const modalActionBtn = document.getElementById('modalActionBtn');
+    const modalCheckBtn = document.getElementById('modalCheckBtn');
+    const modalBackBtn = document.getElementById('modalBackBtn');
+
+    function showModal(task){
+      modalTitle.textContent = task.title;
+      modalDescription.textContent = task.description;
+      const expiresDate = parseDateDDMMYYYY(task.expires);
+      const expired = expiresDate && (new Date(expiresDate.getFullYear(),expiresDate.getMonth(),expiresDate.getDate()) < new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate()));
+      if (task.expires) {
+        modalExpires.textContent = `Until: ${task.expires}${expired ? ' · Expired' : ''}`;
+      } else {
+        modalExpires.textContent = '';
+      }
+      modalReward.textContent = `Reward: ${task.rewardText}`;
+      modalActionBtn.textContent = task.actionText;
+      modalActionBtn.onclick = () => { window.location.href = task.actionLink };
+      let isClaimed = !!localStorage.getItem(task.id + '_claimed');
+      if (isClaimed) {
+        modalCheckBtn.textContent = 'Claimed';
+        modalCheckBtn.disabled = true;
+        modalCheckBtn.style.opacity = 0.6;
+        modalCheckBtn.onclick = null;
+      } else {
+        modalCheckBtn.textContent = task.checkText;
+        modalCheckBtn.onclick = async () => {
+          try{
+            const getFn = new Function('return async function() {' + task.conditionCode + '}');
+            const fn = getFn();
+            const res = await fn();
+            if(res){
+              const rewardFn = new Function(task.rewardCode);
+              const amount = parseInt(rewardFn(),10)||0;
+              setCoins(getCoins()+amount);
+              localStorage.setItem(task.id + '_claimed', 'true');
+              showToast(`Task completed — received ${amount} 🪙`);
+              renderAll();
+              modal.style.display = 'none';
+            } else {
+              showToast('Condition not met');
+            }
+          }catch(e){ console.error(e); showToast('Error checking task'); }
+        };
+      }
+      modal.style.display = 'flex';
+    }
+
+    closeModal.onclick = () => { modal.style.display = 'none'; };
+    modalBackBtn.onclick = () => { modal.style.display = 'none'; };
+    window.onclick = (event) => { if (event.target === modal) modal.style.display = 'none'; };
+
+    // initial render
+    renderAll();
+
+    // Update dynamic elements every second to keep timers live
+    setInterval(() => {
+      renderCalendar();
+      renderProgress();
+      renderCollectToday();
+    }, 1000);
+
+    // Convenience: expose TASKS and DAILY_REWARDS to window for easy editing in console
+    window.APP = {TASKS,DAILY_REWARDS};
+
+  </script>
+</body>
+</html>

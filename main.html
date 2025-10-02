@@ -387,15 +387,10 @@
                 </div>
                 <div class="card">
                     <div class="card-header">
-                        <h3 id="stat_setting_text">Настройки статистики</h3>
+                        <h3 data-translate="statSectionTitle" id="stat_setting_text"></h3>
                         <button class="icon-btn toggle-btn"><i class="fa-solid fa-caret-down"></i></button>
                     </div>
-                    <div class="collapsible-content" style="display: none;">
-                        <select id="statSelect">
-                            <option value="yes">Собирать данные для статистики</option>
-                            <option value="no">Не собирать данные для статистики</option>
-                        </select>
-                        <button class="btn" id="clear" onclick="clearAllStatistic()" style="margin-top: 2%;">Очистить все данные статистики</button>
+                    <div class="collapsible-content" style="display: none;" id="stat_setting">
                     </div>
                 </div>
                 <div class="card">
@@ -415,6 +410,15 @@
                                 </select>
                             </div>
                         </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 data-translate="accountSectionTitle" id="account-settings"></h3>
+                        <button class="icon-btn toggle-btn"><i class="fa-solid fa-caret-down"></i></button>
+                    </div>
+                    <div style="display: none;">
+                        <button class="btn" id="userID-confirming" onclick="window.location.href = 'set_telegram_id.html'">Привязать или изменить свой Telegram ID</button>
                     </div>
                 </div>
                 <div class="card">
@@ -536,10 +540,12 @@
             support: 'support.html',
             connection: 'connection.html',
             popular: 'popular(ru).html',
-            myshop: 'myshop_ru.html'
+            myshop: 'myshop_ru.html',
+            tasks: 'tasks.html'
         };
 
         const filesEn = {
+            tasks: 'tasks_en.html',
             shop: 'shop_en.html',
             nickname: 'nickname_en.html',
             description: 'description_en.html',
@@ -580,6 +586,7 @@
 
         let translations = {
             ru: {
+                task: 'Задания и награды',
                 shop: "Магазин",
                 premium: 'Премиум',
                 main: "Что будем создавать?",
@@ -615,9 +622,16 @@
                 popular: "Популярное",
                 settings: "Настройки",
                 wishlist: "Мой список избранного",
-                myshop: "Мой магазин"
+                myshop: "Мой магазин",
+                statSectionTitle: "Настройки статистики",
+                statCollectYes: "Собирать данные для статистики",
+                statCollectNo: "Не собирать данные для статистики",
+                statClear: "Очистить все данные статистики",
+                accountSectionTitle: "Аккаунт",
+                userIDButton: "Привязать или изменить свой Telegram ID"
             },
             en: {
+                task: 'Tasks and Rewards',
                 shop: "Shop",
                 premium: 'Premium',
                 main: "What do you want to create?",
@@ -653,7 +667,13 @@
                 popular: "Popular",
                 settings: "Settings",
                 wishlist: "My wishlist",
-                myshop: "My Shop"
+                myshop: "My Shop",
+                statSectionTitle: "Statistics settings",
+                statCollectYes: "Collect data for statistics",
+                statCollectNo: "Do not collect data for statistics",
+                statClear: "Clear all statistics data",
+                accountSectionTitle: "Account",
+                userIDButton: "Link or change your Telegram ID"
             }
         };
 
@@ -720,6 +740,17 @@
                 const btn = createButton({ text, icon: settingsIcons[i], href: url });
                 settingsContainer.appendChild(btn);
             });
+
+            document.getElementById('account-settings').textContent = translations[lang].accountSectionTitle;
+            document.getElementById('userID-confirming').textContent = translations[lang].userIDButton;
+            document.getElementById('stat_setting_text').textContent = translations[lang].statSectionTitle;
+            document.getElementById('stat_setting').innerHTML = `
+                <select id="statSelect">
+                    <option value="yes">${translations[lang].statCollectYes}</option>
+                    <option value="no">${translations[lang].statCollectNo}</option>
+                </select>
+                <button class="btn" id="clear" onclick="clearAllStatistic()" style="margin-top: 2%;">${translations[lang].statClear}</button>
+            `;
 
             if (lang === 'ru') {
                 const hasLink = !!LINKS.complaintRU && /^https?:\/\//i.test(LINKS.complaintRU);
@@ -1504,6 +1535,7 @@
                 { textKey: 'profile', icon: 'fa-solid fa-user', href: 'user_profile.html' },
                 { textKey: 'popular', icon: 'fa-solid fa-square-poll-vertical', href: files.popular },
                 { textKey: 'wishlist', icon: 'fa-solid fa-clipboard-list', href: 'izbr.html' },
+                { textKey: 'task', icon: 'fa-solid fa-list-check', href: files.tasks },
                 { textKey: 'myshop', icon: 'fa-solid fa-shop', href: files.myshop },
                 { textKey: 'shop', icon: 'fa-solid fa-cart-shopping', href: files.shop },
                 { textKey: 'premium', icon: 'fa-solid fa-crown', href: 'premium.screen.html' },

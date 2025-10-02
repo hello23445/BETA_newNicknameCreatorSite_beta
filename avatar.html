@@ -278,7 +278,7 @@
   </style>
 </head>
 <body>
-
+  
   <!-- Предупреждение об альбомном режиме -->
   <div id="orientation-warning">
     <div>
@@ -286,7 +286,7 @@
       <button id="orientation-ok">OK</button>
     </div>
   </div>
-
+  
   <!-- Модальное окно для рисования своей формы -->
   <div id="customShapeModal">
     <div id="eraserSettings">
@@ -301,7 +301,7 @@
       <button id="cancelCustomShape" class="cancel">Отмена</button>
     </div>
   </div>
-
+  
   <div class="container">
     <button id="openToolsButton"><b>ОТКРЫТЬ МЕНЮ ИНСТРУМЕНТОВ</b></button>
     <button 
@@ -310,21 +310,22 @@
     id="backToMainMenuButton"
     >
     ВЕРНУТЬСЯ В ГЛАВНОЕ МЕНЮ
-    </button>
-
-    <div class="preview" id="previewArea">
-      <canvas id="avatarCanvas" width="300" height="300"></canvas>
-      <div id="dragOverlay">Перетащите сюда фото или файл шрифта<br>Ни в коем случае не скидывайте папки!</div>
-    </div>
-
-    <div class="tools" id="toolsPanel">
-      <button id="hideToolsButton"><b>УБРАТЬ МЕНЮ ИНСТРУМЕНТОВ</b></button>
-      <button 
-        onclick="window.location.href = 'main.html'" 
-        style="padding: 10px 20px; font-size: 16px;"
-      >
-        ВЕРНУТЬСЯ В ГЛАВНОЕ МЕНЮ
-      </button>
+  </button>
+  
+  <div class="preview" id="previewArea">
+    <canvas id="avatarCanvas" width="300" height="300"></canvas>
+    <div id="dragOverlay">Перетащите сюда фото или файл шрифта<br>Ни в коем случае не скидывайте папки!</div>
+  </div>
+  
+  <div class="tools" id="toolsPanel">
+    <button id="hideToolsButton"><b>УБРАТЬ МЕНЮ ИНСТРУМЕНТОВ</b></button>
+    <button id="shareAvatar" style="margin-top: 0%;"><b>ПОДЕЛИТЬСЯ АВАТАРКОЙ</b></button>
+    <button 
+    onclick="window.location.href = 'main.html'" 
+    style="padding: 10px 20px; font-size: 16px;"
+    >
+    ВЕРНУТЬСЯ В ГЛАВНОЕ МЕНЮ
+  </button>
 
       <label for="bgColor"><b>Цвет фона:</b></label>
       <input type="color" id="bgColor" value="#800080" />
@@ -441,7 +442,6 @@
         <input type="checkbox" id="grayscale" />
       </div>
 
-      <button id="shareAvatar"><b>ПОДЕЛИТЬСЯ АВАТАРКОЙ</b></button>
     </div>
   </div>
 

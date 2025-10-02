@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram ID Verification</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #001f3f, #003366); /* Dark blue gradient */
+            color: #ffffff;
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1); /* Semi-transparent for modern glassmorphism effect */
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 16px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            box-sizing: border-box;
+            transition: background 0.3s;
+        }
+        input:focus {
+            background: rgba(255, 255, 255, 0.3);
+            outline: none;
+        }
+        button, a.button {
+            background: #ffffff;
+            color: #003366;
+            border: none;
+            border-radius: 10px;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s, color 0.3s, transform 0.2s;
+            margin: 10px 5px 0;
+            text-decoration: none;
+            display: inline-block;
+        }
+        button:hover, a.button:hover {
+            background: #e3f2fd;
+            transform: scale(1.05);
+        }
+        a {
+            color: #bbdefb;
+            text-decoration: underline;
+        }
+        .hidden {
+            display: none;
+        }
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .message {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        .message.error {
+            color: #ff1744;
+        }
+        .message.success {
+            color: #00e676;
+        }
+        .header {
+            margin-bottom: 20px;
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+                border-radius: 15px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+            p {
+                font-size: 14px;
+            }
+            input {
+                padding: 12px;
+                font-size: 14px;
+            }
+            button, a.button {
+                padding: 12px 24px;
+                font-size: 14px;
+                width: 100%;
+                margin: 10px 0 0;
+            }
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a id="back-button" href="main.html" class="button"></a>
+        </div>
+        <div id="step1">
+            <h1 id="title-step1">Verify Your Telegram ID</h1>
+            <p id="info-id">You can get your Telegram ID from the bot <a href="https://t.me/my_id_bot" target="_blank">@my_id_bot</a>.</p>
+            <input type="text" id="tg-id" placeholder="Enter your Telegram ID">
+            <h3 id="step1-message" class="message hidden"></h3>
+            <button onclick="nextStep()">Next</button>
+        </div>
+        <div id="step2" class="hidden">
+            <h1 id="title-step2">Enter Verification Code</h1>
+            <p id="info-code">Now, enter the code sent to your Telegram from <a href="https://t.me/NickNaymesBot" target="_blank">@NickNaymesBot</a>.</p>
+            <p id="info-bot">If you haven't received the code, make sure to start the bot <a href="https://t.me/NickNaymesBot" target="_blank">@NickNaymesBot</a>.</p>
+            <input type="text" id="code-input" placeholder="Enter the code">
+            <h3 id="step2-message" class="message hidden"></h3>
+            <div class="button-group">
+                <button onclick="verifyCode()">Verify</button>
+                <button onclick="resendCode()">Resend Code</button>
+                <button onclick="changeId()">Change ID</button>
+            </div>
+        </div>
+        <div id="success" class="hidden">
+            <h1 id="success-title">Success!</h1>
+            <p id="success-message">Your Telegram ID has been verified and saved.</p>
+        </div>
+    </div>
+
+    <script>
+        const botToken = '6537497957:AAGZS4adwPVJSlx16YCCDrKjO96rDK7ZstI'; // Replace with your actual Telegram Bot Token
+
+        const texts = {
+            en: {
+                titleStep1: "Verify Your Telegram ID",
+                infoId: "You can get your Telegram ID from the bot <a href=\"https://t.me/my_id_bot\" target=\"_blank\">@my_id_bot</a>.",
+                titleStep2: "Enter Verification Code",
+                infoCode: "Now, enter the code sent to your Telegram from <a href=\"https://t.me/NickNaymesBot\" target=\"_blank\">@NickNaymesBot</a>.",
+                infoBot: "If you haven't received the code, make sure to start the bot <a href=\"https://t.me/NickNaymesBot\" target=\"_blank\">@NickNaymesBot</a>.",
+                successTitle: "Success!",
+                successMessage: "Your Telegram ID has been verified and saved.",
+                placeholderId: "Enter your Telegram ID",
+                placeholderCode: "Enter the code",
+                buttonNext: "Next",
+                buttonVerify: "Verify",
+                buttonResend: "Resend Code",
+                buttonChange: "Change ID",
+                backButton: "RETURN TO MAIN MENU",
+                errorEmptyId: "Please enter your Telegram ID.",
+                errorInvalidCode: "Invalid code. Try again.",
+                successResend: "Code resent.",
+                errorSend: "Error sending code. Please try again."
+            },
+            ru: {
+                titleStep1: "Подтвердите свой Telegram ID",
+                infoId: "Вы можете получить свой Telegram ID у бота <a href=\"https://t.me/my_id_bot\" target=\"_blank\">@my_id_bot</a>.",
+                titleStep2: "Введите код подтверждения",
+                infoCode: "Теперь введите код, отправленный в ваш Telegram от <a href=\"https://t.me/NickNaymesBot\" target=\"_blank\">@NickNaymesBot</a>.",
+                infoBot: "Если вы не получили код, убедитесь, что запустили бота <a href=\"https://t.me/NickNaymesBot\" target=\"_blank\">@NickNaymesBot</a>.",
+                successTitle: "Успех!",
+                successMessage: "Ваш Telegram ID подтвержден и сохранен.",
+                placeholderId: "Введите свой Telegram ID",
+                placeholderCode: "Введите код",
+                buttonNext: "Далее",
+                buttonVerify: "Подтвердить",
+                buttonResend: "Повторно отправить код",
+                buttonChange: "Изменить ID",
+                backButton: "ВЕРНУТЬСЯ В ГЛАВНОЕ МЕНЮ",
+                errorEmptyId: "Пожалуйста, введите ваш Telegram ID.",
+                errorInvalidCode: "Неверный код. Попробуйте снова.",
+                successResend: "Код повторно отправлен.",
+                errorSend: "Ошибка отправки кода. Попробуйте снова."
+            }
+        };
+
+        const lang = localStorage.getItem('lang') === 'ru' ? 'ru' : 'en';
+        const currentTexts = texts[lang];
+
+        // Set texts
+        document.getElementById('title-step1').innerHTML = currentTexts.titleStep1;
+        document.getElementById('info-id').innerHTML = currentTexts.infoId;
+        document.getElementById('title-step2').innerHTML = currentTexts.titleStep2;
+        document.getElementById('info-code').innerHTML = currentTexts.infoCode;
+        document.getElementById('info-bot').innerHTML = currentTexts.infoBot;
+        document.getElementById('success-title').innerHTML = currentTexts.successTitle;
+        document.getElementById('success-message').innerHTML = currentTexts.successMessage;
+        document.getElementById('tg-id').placeholder = currentTexts.placeholderId;
+        document.getElementById('code-input').placeholder = currentTexts.placeholderCode;
+        document.querySelector('button[onclick="nextStep()"]').textContent = currentTexts.buttonNext;
+        document.querySelector('button[onclick="verifyCode()"]').textContent = currentTexts.buttonVerify;
+        document.querySelector('button[onclick="resendCode()"]').textContent = currentTexts.buttonResend;
+        document.querySelector('button[onclick="changeId()"]').textContent = currentTexts.buttonChange;
+        document.getElementById('back-button').textContent = currentTexts.backButton;
+
+        let tempId = '';
+        let verificationCode = '';
+
+        async function sendCodeToTelegram(id, code) {
+            const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${id}&text=Your verification code is: ${code}`;
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('Failed to send message');
+                }
+                return true;
+            } catch (error) {
+                console.error(error);
+                return false;
+            }
+        }
+
+        async function nextStep() {
+            const step1MessageElem = document.getElementById('step1-message');
+            tempId = document.getElementById('tg-id').value.trim();
+            if (!tempId) {
+                step1MessageElem.textContent = currentTexts.errorEmptyId;
+                step1MessageElem.classList.remove('hidden');
+                step1MessageElem.classList.add('error');
+                step1MessageElem.classList.remove('success');
+                return;
+            }
+
+            step1MessageElem.classList.add('hidden');
+
+            // Generate a random 6-digit code
+            verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+            // Send the code via Telegram Bot API
+            const sent = await sendCodeToTelegram(tempId, verificationCode);
+
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step2').classList.remove('hidden');
+
+            if (!sent) {
+                const step2MessageElem = document.getElementById('step2-message');
+                step2MessageElem.textContent = currentTexts.errorSend;
+                step2MessageElem.classList.remove('hidden');
+                step2MessageElem.classList.add('error');
+                step2MessageElem.classList.remove('success');
+            }
+        }
+
+        async function resendCode() {
+            const messageElem = document.getElementById('step2-message');
+            // Regenerate a new random 6-digit code
+            verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+            // Send the code via Telegram Bot API
+            const sent = await sendCodeToTelegram(tempId, verificationCode);
+            if (sent) {
+                messageElem.textContent = currentTexts.successResend;
+                messageElem.classList.remove('hidden');
+                messageElem.classList.add('success');
+                messageElem.classList.remove('error');
+            } else {
+                messageElem.textContent = currentTexts.errorSend;
+                messageElem.classList.remove('hidden');
+                messageElem.classList.add('error');
+                messageElem.classList.remove('success');
+            }
+        }
+
+        function changeId() {
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step1').classList.remove('hidden');
+            document.getElementById('code-input').value = ''; // Clear code input
+            document.getElementById('step2-message').classList.add('hidden');
+        }
+
+        function verifyCode() {
+            const messageElem = document.getElementById('step2-message');
+            const enteredCode = document.getElementById('code-input').value.trim();
+            if (enteredCode === verificationCode) {
+                localStorage.setItem('userID', tempId);
+                document.getElementById('step2').classList.add('hidden');
+                document.getElementById('success').classList.remove('hidden');
+                messageElem.classList.add('hidden');
+            } else {
+                messageElem.textContent = currentTexts.errorInvalidCode;
+                messageElem.classList.remove('hidden');
+                messageElem.classList.add('error');
+                messageElem.classList.remove('success');
+            }
+
+            // In real scenario: Verify on backend to prevent client-side tampering.
+        }
+    </script>
+</body>
+</html>
