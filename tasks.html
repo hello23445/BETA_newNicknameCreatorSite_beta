@@ -11,6 +11,8 @@
       --accent:#251897;
       --card:#0b0b2b;
       --glass: rgba(255,255,255,0.03);
+      --success: #22c55e;
+      --error: #ef4444;
     }
     html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased}
     .app{max-width:1100px;margin:24px auto;padding:20px}
@@ -22,12 +24,12 @@
     /* left: calendar + tasks */
     .panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:16px;padding:18px;box-shadow:0 6px 18px rgba(2,2,8,0.6)}
     .calendar{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
-    .day{background:var(--card);border-radius:12px;padding:12px;min-height:88px;display:flex;flex-direction:column;justify-content:space-between}
+    .day{background:var(--card);border-radius:12px;padding:12px;height:88px;display:flex;flex-direction:column;justify-content:space-between}
     .day.claimed{opacity:0.6;box-shadow:inset 0 0 0 2px rgba(0,0,0,0.2)}
     .day.today{outline:2px solid rgba(37,24,151,0.5)}
     .day .num{font-weight:700}
     .day .reward{font-size:13px}
-    .day button{margin-top:8px;padding:8px 10px;border-radius:8px;border:none;background:var(--accent);color:white;font-weight:600;cursor:pointer}
+    .day button{margin-top:8px;padding:8px 10px;border-radius:8px;border:none;background:var(--accent);color:white;font-weight:600;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px;}
 
     /* tasks */
     .tasks-list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
@@ -52,6 +54,17 @@
     .close-btn{position:absolute;top:16px;right:16px;cursor:pointer;color:var(--text);font-size:24px;transition: color 0.2s;}
     .close-btn:hover{color:white;}
 
+    /* toast */
+    .toast{display:flex;align-items:center;position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:var(--card);border-radius:12px;padding:16px;max-width:400px;width:calc(100% - 40px);box-shadow:0 4px 12px rgba(0,0,0,0.4);z-index:9999;animation:slideUp 0.3s ease-out;color:var(--text);}
+    @keyframes slideUp{from{opacity:0;transform:translate(-50%,20px);}to{opacity:1;transform:translate(-50%,0);}}
+    .toast-icon{display:flex;align-items:center;justify-content:center;flex-shrink:0;width:32px;height:32px;border-radius:50%;}
+    .toast.success .toast-icon{background:rgba(34,197,94,0.2);color:var(--success);}
+    .toast.error .toast-icon{background:rgba(239,68,68,0.2);color:var(--error);}
+    .toast-text{margin-left:12px;font-size:16px;font-weight:500;flex:1;}
+    .toast-close{margin-left:auto;background:none;border:none;color:var(--text);opacity:0.6;cursor:pointer;padding:0 8px;transition:opacity 0.2s;}
+    .toast-close:hover{opacity:1;}
+    .toast svg{width:20px;height:20px;}
+
     /* right column */
     .side{position:sticky;top:20px}
     .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:14px}
@@ -64,6 +77,9 @@
     @media (max-width:900px){
       main{grid-template-columns:1fr}
       .coins{font-size:14px}
+    }
+    @media (max-width:768px){
+      .calendar{grid-template-columns:repeat(3,1fr)}
     }
   </style>
 </head>
@@ -102,7 +118,10 @@
         <div style="height:12px"></div>
 
         <div class="card" style="margin-top:12px">
-          <h3>Задания</h3>
+          <h3>
+            Задания
+            (Нажмите на любое задание чтобы узнать подробности)
+          </h3>
           <div class="tasks-list" id="tasksList"></div>
         </div>
       </aside>
@@ -173,7 +192,7 @@
         actionText: 'Перейти',
         actionLink: 'https://t.me/NickNaymes2Bot',
         conditionCode: 'return await checkSubscription();',
-        expires: '31.12.2025',
+        expires: '',
         rewardText: '1 000🪙',
         rewardCode: 'return 1000;',
         showConditionCode: 'return localStorage.getItem("userID")'
@@ -187,13 +206,121 @@
         actionText: 'Перейти в главное меню',
         actionLink: 'main.html',
         conditionCode: "return !!localStorage.getItem('userID');",
-        expires: '31.12.2025',
+        expires: '',
         rewardText: '500🪙',
         rewardCode: 'return 500;',
         showConditionCode: 'return true;'
-      }
+      },
+      {
+        id: 'task3',
+        title: 'Добавить никнейм в избранное',
+        description: `Чтобы получить награду, вам нужно добавить любой никнейм в избранное.`,
+        checkText: 'Проверить',
+        actionText: 'Перейти в главное меню',
+        actionLink: 'main.html',
+        conditionCode: "return !!localStorage.getItem('loved');",
+        expires: '',
+        rewardText: '255🪙',
+        rewardCode: 'return 255;',
+        showConditionCode: 'return true;'
+      },
+      {
+        id: 'task4',
+        title: 'Добавить описание в избранное',
+        description: 'Чтобы получить награду, вам нужно создать любое описание и добавить его в избранное.',
+        checkText: 'Проверить',
+        actionText: 'Перейти в главное меню',
+        actionLink: 'main.html',
+        conditionCode: "return !!localStorage.getItem('loved_descs');",
+        expires: '',
+        rewardText: '255🪙',
+        rewardCode: 'return 255;',
+        showConditionCode: 'return true;'
+      },
+      {
+        id: 'task5',
+        title: 'Купить любой товар в магазине',
+        description: 'Чтобы получить награду, вам нужно купить абсолюьно любой товар в магазине.',
+        checkText: 'Проверить',
+        actionText: 'Перейти в магазин',
+        actionLink: 'shop_ru.html',
+        conditionCode: "return !!localStorage.getItem('bought');",
+        expires: '',
+        rewardText: '200🪙',
+        rewardCode: 'return 200;',
+        showConditionCode: 'return true;'
+      },
+      {
+        id: 'task6',
+        title: 'Купить Премиум',
+        description: 'Чтобы получить награду, вам нужно купить Премиум.',
+        checkText: 'Проверить',
+        actionText: 'Перейти к покупке Премиума',
+        actionLink: 'premium.screen.html',
+        conditionCode: "return !!localStorage.getItem('premium');",
+        expires: '',
+        rewardText: '200 000🪙',
+        rewardCode: 'return 200000;',
+        showConditionCode: 'return true;'
+      },
+      {
+        id: 'task7',
+        title: 'Создать свою первую ЛЕГО-фигурку',
+        description: 'Чтобы получить награду, вам нужно создать свою лego-фигурку.',
+        checkText: 'Проверить',
+        actionText: 'Перейти к созданию ЛЕГО-фигурки',
+        actionLink: 'main.html',
+        conditionCode: "return !!localStorage.getItem('created_lego');",
+        expires: '',
+        rewardText: '555🪙',
+        rewardCode: 'return 555;',
+        showConditionCode: 'return true;'
+      },
+      {
+        id: 'task8',
+        title: `Создать ЛЕГО-фигурку 8 штук(${localStorage.getItem('created_lego')||0}/8)`,
+        description: 'Чтобы получить награду, вам нужно создать свою лego-фигурку 8 штук.',
+        checkText: 'Проверить',
+        actionText: 'Перейти к созданию ЛЕГО-фигурки',
+        actionLink: 'main.html',
+        conditionCode: "return await checkLego()",
+        expires: '',
+        rewardText: '800🪙',
+        rewardCode: 'return 800;',
+        showConditionCode: 'return !!localStorage.getItem("created_lego")'
+      },
+      {
+        id: 'task9',
+        title: `Добавить свою первую Аватарку.`,
+        description: 'Чтобы получить награду, вам нужно добавить свою первую аватарку.',
+        checkText: 'Проверить',
+        actionText: 'Перейти в профиль',
+        actionLink: 'user_profile.html',
+        conditionCode: "return await checkAvatarForTask()",
+        expires: '',
+        rewardText: '300🪙',
+        rewardCode: 'return 300;',
+        showConditionCode: 'return true;'
+      },
     ];
 
+    function checkAvatarForTask() {
+      if (localStorage.getItem('userAvatar') !== 'user_profile_photo.png') {
+          return true;
+      }
+      else {
+          return false;
+      }
+    }
+    function checkLego() {
+      if ((Number(localStorage.getItem('created_lego')) || 0) >= 8) {
+          return true;
+      }
+      else {
+          return false;
+      }
+
+    }
     async function checkSubscription() {
         // === Все данные внутри функции ===
         let BOT_TOKEN  = "6537497957:AAGZS4adwPVJSlx16YCCDrKjO96rDK7ZstI";       // токен бота
@@ -305,17 +432,16 @@
           const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
           const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
           const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
-          let remainingParts = [];
-          if (days > 0) remainingParts.push(`${days} д.`);
-          if (hours > 0) remainingParts.push(`${hours}ч.`);
-          if (minutes > 0) remainingParts.push(`${minutes}м.`);
-          if (seconds > 0 || remainingParts.length === 0) remainingParts.push(`${seconds}с.`);
-          btn.textContent=`Доступен через: ${remainingParts.join(' ')}`; btn.disabled=true
+          const daysStr = String(days).padStart(2, '0');
+          const hoursStr = String(hours).padStart(2, '0');
+          const minutesStr = String(minutes).padStart(2, '0');
+          const secondsStr = String(seconds).padStart(2, '0');
+          btn.textContent = `${daysStr} д. ${hoursStr}ч. ${minutesStr}м. ${secondsStr}с.`; btn.disabled=true
         } else if(i<todayIndex && localStorage.getItem('premium')!=='yes'){
           btn.textContent='Пропущено (только премиум)'; btn.disabled=true
         } else {
           btn.textContent='Забрать';
-          btn.onclick = ()=>{ if(claimIndex(i)) showToast(`Получено ${DAILY_REWARDS[i]} 🪙`); else showToast('Нельзя забрать') }
+          btn.onclick = ()=>{ if(claimIndex(i)) showToast(`Получено ${DAILY_REWARDS[i]} 🪙`, 'success'); else showToast('Нельзя забрать', 'error') }
         }
         day.appendChild(btn);
         calendarEl.appendChild(day);
@@ -357,12 +483,12 @@
                 const amount = parseInt(rewardFn(),10)||0;
                 setCoins(getCoins()+amount);
                 localStorage.setItem(t.id + '_claimed', 'true');
-                showToast(`Задание выполнено — получено ${amount} 🪙`);
+                showToast(`Задание выполнено — получено ${amount} 🪙`, 'success');
                 renderAll();
               } else {
-                showToast('Условие не выполнено');
+                showToast('Условие не выполнено', 'error');
               }
-            }catch(e){ console.error(e); showToast('Ошибка при проверке задания'); }
+            }catch(e){ console.error(e); showToast('Ошибка при проверке задания', 'error'); }
           };
         }
         taskEl.appendChild(btn);
@@ -401,14 +527,69 @@
     // collect today button
     collectTodayBtn.addEventListener('click', ()=>{
       const today = dayIndexFromStart();
-      if(getClaimed().includes(today)) return showToast('Сегодня уже забрали');
-      if(claimIndex(today)) showToast(`Получено ${DAILY_REWARDS[today]} 🪙`); else showToast('Нельзя забрать');
+      if(getClaimed().includes(today)) return showToast('Сегодня уже забрали', 'error');
+      if(claimIndex(today)) showToast(`Получено ${DAILY_REWARDS[today]} 🪙`, 'success'); else showToast('Нельзя забрать', 'error');
     });
 
     // toast
-    function showToast(text){
-      const t = document.createElement('div'); t.textContent = text; t.style.position='fixed'; t.style.left='50%'; t.style.transform='translateX(-50%)'; t.style.bottom='26px'; t.style.background='rgba(0,0,0,0.6)'; t.style.color='white'; t.style.padding='10px 14px'; t.style.borderRadius='10px'; t.style.zIndex=9999; document.body.appendChild(t);
-      setTimeout(()=>{ t.style.transition='all 300ms'; t.style.opacity=0; setTimeout(()=>t.remove(),300) },1800);
+    function showToast(text, type = 'info'){
+      const existingToasts = document.querySelectorAll('.toast');
+      existingToasts.forEach(toast => toast.remove());
+      const t = document.createElement('div');
+      t.classList.add('toast');
+      if(type === 'success') {
+        t.classList.add('success');
+        t.innerHTML = `
+          <div class="toast-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z"/>
+            </svg>
+          </div>
+          <div class="toast-text">${text}</div>
+          <button class="toast-close">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+            </svg>
+          </button>
+        `;
+      } else if(type === 'error') {
+        t.classList.add('error');
+        t.innerHTML = `
+          <div class="toast-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 11.793a1 1 0 1 1-1.414 1.414L10 11.414l-2.293 2.293a1 1 0 0 1-1.414-1.414L8.586 10 6.293 7.707a1 1 0 0 1 1.414-1.414L10 8.586l2.293-2.293a1 1 0 0 1 1.414 1.414L11.414 10l2.293 2.293Z"/>
+            </svg>
+          </div>
+          <div class="toast-text">${text}</div>
+          <button class="toast-close">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+            </svg>
+          </button>
+        `;
+      } else {
+        t.innerHTML = `
+          <div class="toast-text">${text}</div>
+          <button class="toast-close">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+            </svg>
+          </button>
+        `;
+      }
+      document.body.appendChild(t);
+      const closeBtn = t.querySelector('.toast-close');
+      if(closeBtn) {
+        closeBtn.addEventListener('click', () => {
+          t.style.opacity = 0;
+          setTimeout(() => t.remove(), 300);
+        });
+      }
+      setTimeout(() => {
+        t.style.transition = 'opacity 0.3s ease';
+        t.style.opacity = 0;
+        setTimeout(() => t.remove(), 300);
+      }, 5000);
     }
 
     // modal
@@ -445,7 +626,7 @@
         modalCheckBtn.textContent = task.checkText;
         modalCheckBtn.onclick = async () => {
           try{
-            const getFn = new Function('return async function() {' + t.conditionCode + '}');
+            const getFn = new Function('return async function() {' + task.conditionCode + '}');
             const fn = getFn();
             const res = await fn();
             if(res){
@@ -453,13 +634,13 @@
               const amount = parseInt(rewardFn(),10)||0;
               setCoins(getCoins()+amount);
               localStorage.setItem(task.id + '_claimed', 'true');
-              showToast(`Задание выполнено — получено ${amount} 🪙`);
+              showToast(`Задание выполнено — получено ${amount} 🪙`, 'success');
               renderAll();
               modal.style.display = 'none';
             } else {
-              showToast('Условие не выполнено');
+              showToast('Условие не выполнено', 'error');
             }
-          }catch(e){ console.error(e); showToast('Ошибка при проверке задания'); }
+          }catch(e){ console.error(e); showToast('Ошибка при проверке задания', 'error'); }
         };
       }
       modal.style.display = 'flex';
