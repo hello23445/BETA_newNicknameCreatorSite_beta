@@ -68,6 +68,39 @@
       max-height: 300px; /* Ограничение высоты для прокрутки */
       overflow-y: auto; /* Вертикальная прокрутка */
       padding-right: 10px; /* Отступ для скроллбара справа */
+      -webkit-overflow-scrolling: touch; /* Плавная прокрутка на iOS */
+    }
+
+    /* Стили для постоянного отображения скроллбара в WebKit (Chrome, Safari) */
+    #names::-webkit-scrollbar,
+    #descs::-webkit-scrollbar {
+      width: 10px;
+      background: transparent;
+    }
+
+    #names::-webkit-scrollbar-track,
+    #descs::-webkit-scrollbar-track {
+      background: #060039; /* Цвет трека, matching body background */
+      border-radius: 10px;
+    }
+
+    #names::-webkit-scrollbar-thumb,
+    #descs::-webkit-scrollbar-thumb {
+      background: #888; /* Цвет ползунка */
+      border-radius: 10px;
+      border: 2px solid #060039; /* Граница для лучшего вида */
+    }
+
+    #names::-webkit-scrollbar-thumb:hover,
+    #descs::-webkit-scrollbar-thumb:hover {
+      background: #555; /* Цвет при hover */
+    }
+
+    /* Для Firefox */
+    #names,
+    #descs {
+      scrollbar-width: thin; /* Тонкий скроллбар */
+      scrollbar-color: #888 #060039; /* Цвет ползунка и трека */
     }
 
     /* Мобильная адаптация */
