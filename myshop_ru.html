@@ -64,6 +64,12 @@
       background: #3a28c0;
     }
 
+    #names, #descs {
+      max-height: 300px; /* Ограничение высоты для прокрутки */
+      overflow-y: auto; /* Вертикальная прокрутка */
+      padding-right: 10px; /* Отступ для скроллбара справа */
+    }
+
     /* Мобильная адаптация */
     @media (max-width: 480px) {
       body {
@@ -84,6 +90,9 @@
       .item {
         font-size: 14px;
         padding: 8px;
+      }
+      #names, #descs {
+        max-height: 200px; /* Меньшая высота для мобильных */
       }
     }
   </style>
