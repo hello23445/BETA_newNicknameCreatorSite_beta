@@ -316,7 +316,7 @@
         checkText: 'Check',
         actionText: 'Go to create LEGO figure',
         actionLink: 'main.html',
-        conditionCode: "return await checkLego()",
+        conditionCode: "return await checkCountForTasks(localStorage.getItem('created_lego'), 8);",
         expires: '',
         rewardText: '800🪙',
         rewardCode: 'return 800;',
@@ -345,8 +345,9 @@
           return false;
       }
     }
-    function checkLego() {
-      if ((Number(localStorage.getItem('created_lego')) || 0) >= 8) {
+    function checkCountForTasks(count, required_number) {
+      
+      if ((Number(count) || 0) >= required_number && count && required_number) {
           return true;
       }
       else {

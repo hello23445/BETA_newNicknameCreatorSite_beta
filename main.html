@@ -381,7 +381,16 @@
                                 <i class="fa-solid fa-globe" style="font-size: 18px;"></i>
                                 <select id="langSelect"></select>
                             </div>
-                            <button class="btn" id="tok"><i class="fa-solid fa-key left-icon"></i><span>Token</span></button>
+                            <div class="card" style="width: 100%;">
+                                <div class="card-header">
+                                    <h3 id="showmytokentext">Показать мой токен пользователя</h3>
+                                    <button class="icon-btn toggle-btn"><i class="fa-solid fa-caret-up"></i></button>
+                                </div>
+                                <div style="display: none; margin-top: 1%;">
+                                    <button class="btn" id="tok"><i class="fa-solid fa-key left-icon"></i><span>Token</span></button>
+                                    <p style="margin-top: 0%; margin-bottom: 0%; color: rgb(210, 209, 209);" id="userTokenWarning"></p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -418,6 +427,16 @@
                         <button class="icon-btn toggle-btn"><i class="fa-solid fa-caret-down"></i></button>
                     </div>
                     <div style="display: none;">
+                        <div class="card" style="display: none;" id="my_idBox">
+                            <div class="card-header">
+                                <h3 id="my_idHeader">Мой Telegram ID</h3>
+                                <button class="icon-btn toggle-btn"><i class="fa-solid fa-caret-down"></i></button>
+                            </div>
+                            <div style="display: none;">
+                                <button id="myID" class="btn">Ваш Telegram ID</button>
+                            </div>
+                        </div>
+                        
                         <button class="btn" id="userID-confirming" onclick="window.location.href = 'set_telegram_id.html'">Привязать или изменить свой Telegram ID</button>
                     </div>
                 </div>
@@ -428,6 +447,7 @@
                     </div>
                     <div class="collapsible-content" style="display: none;">
                         <div class="settings-buttons" id="userDataButtons"></div>
+                        <button class="btn" style="margin-top: 2%;" id="LoadDatasFromUserToken" onclick='window.location.href = "https://t.me/Clickerstart_bot"''>Загрузить данные по токену(Через службу поддержки)</button>
                     </div>
                 </div>
                 <div class="card">
@@ -673,7 +693,7 @@
                 statCollectNo: "Do not collect data for statistics",
                 statClear: "Clear all statistics data",
                 accountSectionTitle: "Account",
-                userIDButton: "Link or change your Telegram ID"
+                userIDButton: "Link or change my Telegram ID"
             }
         };
 
@@ -712,6 +732,18 @@
         }
 
         function applyTranslations() {
+            checkUserID();
+            document.getElementById('showmytokentext').style.color = 'white';
+            if (localStorage.getItem('lang') === 'ru'){
+                document.getElementById('LoadDatasFromUserToken').textContent = 'Загрузить данные по токену(Через службу поддержки)';
+                document.getElementById('userTokenWarning').textContent = 'Токен необходим для работы со службой поддержки и загрузки ваших данных в этом приложении. Будьте внимательны перед тем как показывать свой токен другим.';
+                document.getElementById('showmytokentext').textContent = 'Показать мой токен пользователя';
+            }
+            else{
+                document.getElementById('LoadDatasFromUserToken').textContent = 'Load data by token (via support service)';
+                document.getElementById('userTokenWarning').textContent = 'The token is required to work with the support service and to load your data in this application. Be careful before sharing your token with others.';
+                document.getElementById('showmytokentext').textContent = 'Show my user token'
+            }
             const files = lang === 'ru' ? filesRu : filesEn;
 
             document.querySelectorAll('[data-translate]').forEach(el => {
@@ -1556,7 +1588,45 @@
                 sideButtons.appendChild(btn);
             });
         }
-        
+        function checkUserID(){
+            if (localStorage.getItem('userID')){
+                document.getElementById('my_idHeader').style.color = 'white';
+
+                if (localStorage.getItem('lang') === 'ru'){
+                    document.getElementById('my_idHeader').textContent = 'Показать мой Telegram ID';
+                    document.getElementById('myID').textContent = localStorage.getItem('userID') + ' (Нажмите чтобы скопировать)'
+                }
+                else{
+                    document.getElementById('my_idHeader').textContent = 'Show my Telegram ID';
+                    document.getElementById('myID').textContent = localStorage.getItem('userID') + ' (Click to copy)'
+                }
+                document.getElementById('my_idBox').style.display = 'block'
+            }
+            else{
+                document.getElementById('my_idBox').style.display = 'none'
+            }
+        }
+        checkUserID();
+
+        document.getElementById('myID').addEventListener('click', (e) => {
+            const textToCopy = localStorage.getItem('userID'); // берём текст из элемента
+            navigator.clipboard.writeText(textToCopy) // копируем в буфер обмена
+                .then(() => {
+                    const lang = localStorage.getItem('lang');
+                    const originalText = e.target.textContent;
+                    e.target.textContent = lang === 'ru' ? 'Скопировано!' : 'Copied!';
+
+                    // через 1.5 сек вернуть исходный текст
+                    setTimeout(() => {
+                        e.target.textContent = originalText;
+                    }, 2500);
+                })
+                .catch(() => {
+                    alert(lang === 'ru' ? 'Ошибка копирования' : 'Copy error');
+                });
+        });
+
+
         async function checkTokenAndRedirect() {
             try {
                 // Получаем токен из localStorage
