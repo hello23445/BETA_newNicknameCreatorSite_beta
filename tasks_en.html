@@ -80,13 +80,46 @@
     }
     @media (max-width:768px){
       .calendar{grid-template-columns:repeat(3,1fr)}
+      body {font-size:14px;}
+      .day {height:70px; padding:10px;}
+      .day .num {font-size:15px;}
+      .day .reward {font-size:11px;}
+      .day button {font-size:11px; padding:6px 8px;}
+      .task .title {font-size:14px;}
+      .task .meta {font-size:11px;}
+      .btn {font-size:12px; padding:6px 8px;}
+      .calendar {gap:8px;}
+      .tasks-list {gap:8px;}
+      .modal-content {padding:16px;}
+      .modal-content h1 {font-size:18px;}
+      .modal-content .description {font-size:12px;}
+      .modal-content .meta {font-size:14px;}
+      .app {padding:10px;}
+      header {gap:8px;}
+      .back-btn {font-size:14px; padding:8px 12px;}
+      .coins {font-size:14px;}
+      footer {font-size:11px;}
+    }
+    @media (max-width:480px){
+      body {font-size:12px;}
+      .day {height:60px; padding:8px;}
+      .day .num {font-size:13px;}
+      .day .reward {font-size:10px;}
+      .day button {font-size:10px; padding:5px 7px;}
+      .task .title {font-size:12px;}
+      .task .meta {font-size:10px;}
+      .btn {font-size:10px; padding:5px 7px;}
+      .calendar {grid-template-columns:repeat(2,1fr); gap:6px;}
+      .modal-content {padding:12px; max-width:90%;}
+      .modal-content h1 {font-size:16px;}
+      .modal-content .description {font-size:11px;}
     }
   </style>
 </head>
 <body>
   <div class="app">
     <header>
-      <a class="back-btn" href="main.html">◀ BACK TO MAIN MENU</a>
+      <a class="back-btn" href="main.html">◀ RETURN TO MAIN MENU</a>
       <div style="display:flex;gap:12px;align-items:center">
         <div class="coins" id="coinsDisplay">🪙0</div>
       </div>
@@ -95,7 +128,7 @@
     <main>
       <section class="panel">
         <h2>Rewards</h2>
-        <p style="opacity:0.8">Rewards can be collected one per day. If you have Premium, you can collect missed rewards.</p>
+        <p style="opacity:0.8">Rewards can be collected one per day. If you have Premium, you can claim missed rewards.</p>
 
         <div style="margin-top:14px">
           <div class="calendar" id="calendar"></div>
@@ -120,7 +153,7 @@
         <div class="card" style="margin-top:12px">
           <h3>
             Tasks
-            (Click on any task to learn more)
+            (Click on any task to learn details)
           </h3>
           <div class="tasks-list" id="tasksList"></div>
         </div>
@@ -128,7 +161,7 @@
     </main>
 
     <footer>
-      If you want to add your own task, write to support: BACK TO MAIN MENU > In the upper right corner, click the Menu button > Settings > Open the "Support and Contact" section > Click "Write to support"
+      If you want to add your own task, write to support: RETURN TO MAIN MENU > In the upper right corner, click the Menu button > Settings > Open the "Support and Contact" section > Click "Write to support"
     </footer>
   </div>
 
@@ -172,15 +205,15 @@
     /* TASKS structure:
       id: unique id
       title: task title
-      description: task text (shown to the user)
+      description: task text (shown to user)
       checkText: check button text
       actionText: second button text (leads to execution)
       actionLink: link/file to redirect to
-      conditionCode: string with js-code (any code that can be executed), which should return true if the task is completed
-      expires: expiration date in the format 'dd.mm.yyyy' (inclusive)
-      rewardText: string displayed to the user (e.g. '100 🪙')
-      rewardCode: string with js-code (any code that can be executed), returning the number of coins (e.g. 'return 100;')
-      showConditionCode: string with js-code (any code that can be executed), which should return true if the task should appear (e.g. 'return localStorage.getItem("") === ...;' or 'return !localStorage.getItem("");' or 'return localStorage.getItem("item") === ...;' or 'return localStorage.getItem("item") !== ...;' and so on)
+      conditionCode: js code string (any executable code) that should return true if task is completed
+      expires: expiration date in 'dd.mm.yyyy' format (inclusive)
+      rewardText: string displayed to user (e.g. '100 🪙')
+      rewardCode: js code string (any executable code) returning number of coins (e.g. 'return 100;')
+      showConditionCode: js code string (any executable code) that should return true if task should appear (e.g. 'return localStorage.getItem("") === ...;' or 'return !localStorage.getItem("");' or 'return localStorage.getItem("item") === ...;' or 'return localStorage.getItem("item") !== ...;' and so on)
     */
 
     const TASKS = [
@@ -199,9 +232,9 @@
       },
       {
         id: 'task2',
-        title: 'Bind your Telegram ID',
-        description: `To receive the reward, you need to bind your Telegram ID in the settings.
-        1. Open the main menu of the application.2. In the upper right corner, click the "Menu" button.3. Select "Settings".4. In the "Account" section, click "Bind Telegram ID" and enter your ID.5. Click "Save".`,
+        title: 'Link your Telegram ID',
+        description: `To receive the reward, you need to link your Telegram ID in settings.
+        1. Open the main menu of the application.2. In the upper right corner, click the "Menu" button.3. Select "Settings".4. In the "Account" section, click "Link Telegram ID" and enter your ID.5. Click "Save".`,
         checkText: 'Check',
         actionText: 'Go to main menu',
         actionLink: 'main.html',
@@ -255,7 +288,7 @@
         title: 'Buy Premium',
         description: 'To receive the reward, you need to buy Premium.',
         checkText: 'Check',
-        actionText: 'Go to Premium purchase',
+        actionText: 'Go to buy Premium',
         actionLink: 'premium.screen.html',
         conditionCode: "return !!localStorage.getItem('premium');",
         expires: '',
@@ -268,7 +301,7 @@
         title: 'Create your first LEGO figure',
         description: 'To receive the reward, you need to create your LEGO figure.',
         checkText: 'Check',
-        actionText: 'Go to LEGO figure creation',
+        actionText: 'Go to create LEGO figure',
         actionLink: 'main.html',
         conditionCode: "return !!localStorage.getItem('created_lego');",
         expires: '',
@@ -278,10 +311,10 @@
       },
       {
         id: 'task8',
-        title: `Create LEGO figure 8 pieces(${localStorage.getItem('created_lego')||0}/8)`,
-        description: 'To receive the reward, you need to create your LEGO figure 8 pieces.',
+        title: `Create LEGO figures 8 pieces(${localStorage.getItem('created_lego')||0}/8)`,
+        description: 'To receive the reward, you need to create your LEGO figures 8 pieces.',
         checkText: 'Check',
-        actionText: 'Go to LEGO figure creation',
+        actionText: 'Go to create LEGO figure',
         actionLink: 'main.html',
         conditionCode: "return await checkLego()",
         expires: '',
@@ -355,7 +388,7 @@
     /* ----------------------
        Application logic
        ----------------------*/
-    // localStorage initialization
+    // Initialize localStorage
     if(!localStorage.getItem('coins')) localStorage.setItem('coins','0');
     if(!localStorage.getItem('rewardsStart')) localStorage.setItem('rewardsStart', new Date().toISOString().slice(0,10)); // yyyy-mm-dd
     if(!localStorage.getItem('claimedDays')) localStorage.setItem('claimedDays', JSON.stringify([]));
@@ -436,7 +469,7 @@
           const hoursStr = String(hours).padStart(2, '0');
           const minutesStr = String(minutes).padStart(2, '0');
           const secondsStr = String(seconds).padStart(2, '0');
-          btn.textContent = `${daysStr} d. ${hoursStr}h. ${minutesStr}m. ${secondsStr}s.`; btn.disabled=true
+          btn.textContent = `${daysStr} d ${hoursStr}h ${minutesStr}m ${secondsStr}s`; btn.disabled=true
         } else if(i<todayIndex && localStorage.getItem('premium')!=='yes'){
           btn.textContent='Missed (premium only)'; btn.disabled=true
         } else {
