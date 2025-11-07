@@ -81,6 +81,19 @@
       .qr-settings {
         max-width: 100%;
       }
+      #backToMain {
+        position: static;
+        margin: 0 auto 10px;
+        display: block;
+      }
+    }
+
+    @media (min-width: 768px) {
+      #backToMain {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+      }
     }
 
     .qr-container {
@@ -289,22 +302,19 @@
     .color-option.selected {
       border: 2px solid #000;
     }
+
+    #backToMain {
+      padding: 10px 20px;
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
-<button 
-    onclick="window.location.href = 'main.html'" 
-    style="position: absolute; bottom: 10px; left: 10px; padding: 10px 20px; font-size: 16px;"
->
-    BACK TO MAIN MENU
-</button>
-
-
-
   <div id="statusMessage"></div>
   
   <div class="container">
     <div class="form-container">
+      <button id="backToMain" onclick="window.location.href = 'main.html'">RETURN TO MAIN MENU</button>
       <select id="qrType" onchange="updateForm()">
         <option value="url">URL</option>
         <option value="wifi">WiFi Network</option>
@@ -410,7 +420,7 @@
       
       <div id="emailForm" class="input-group" style="display: none;">
         <div class="input-group-flex">
-          <input type="email" id="emailAddress" placeholder="Enter Email address">
+          <input type="email" id="emailAddress" placeholder="Enter email address">
           <button type="button" class="info-button" onclick="showFieldInfo('emailAddress')">?</button>
         </div>
         <div class="input-group-flex">
@@ -493,7 +503,7 @@
       
       <div id="viberForm" class="input-group" style="display: none;">
         <div class="input-group-flex">
-          <input type="tel" id="viberNumber" placeholder="Enter Viber number" class="phone-format">
+          <input type="tel" id="viberNumber" placeholder="Enter phone number for Viber" class="phone-format">
           <button type="button" class="info-button" onclick="showFieldInfo('viberNumber')">?</button>
         </div>
       </div>
@@ -549,7 +559,7 @@
       
       <div id="signalForm" class="input-group" style="display: none;">
         <div class="input-group-flex">
-          <input type="tel" id="signalNumber" placeholder="Enter Signal number" class="phone-format">
+          <input type="tel" id="signalNumber" placeholder="Enter phone number for Signal" class="phone-format">
           <button type="button" class="info-button" onclick="showFieldInfo('signalNumber')">?</button>
         </div>
       </div>
@@ -797,12 +807,10 @@
     }
     
     function generateQRCode() {
-
-      if (localStorage.getItem('created_qr_codes')){
+      if (localStorage.getItem('created_qr_codes')) {
         localStorage.setItem('created_qr_codes', String(Number(localStorage.getItem('created_qr_codes')) + 1));
-      }
-      else{
-          localStorage.setItem('created_qr_codes', '1');
+      } else {
+        localStorage.setItem('created_qr_codes', '1');
       }
       clearWarning();
       clearErrorStyles();
@@ -810,6 +818,9 @@
       document.getElementById("qrContainer").style.display = "flex";
       document.querySelector('.form-container').style.display = 'none';
       document.getElementById('backButton').style.display = 'block';
+      // Move backToMain to qrSettings top
+      const backToMain = document.getElementById('backToMain');
+      document.getElementById('qrSettings').insertBefore(backToMain, document.getElementById('qrSettings').firstChild);
       
       var type = document.getElementById("qrType").value;
       var qrText = "";
@@ -859,7 +870,7 @@
           missingFields.push("Phone");
           contactPhone.style.border = "2px solid red";
         }
-        if (!validateInput(contactEmail, /^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Enter a valid Email")) {
+        if (!validateInput(contactEmail, /^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Enter a valid email")) {
           document.getElementById('qrSettings').style.display = 'none';
           return;
         }
@@ -911,7 +922,7 @@
         var emailAddress = document.getElementById("emailAddress");
         var emailSubject = document.getElementById("emailSubject");
         var emailBody = document.getElementById("emailBody");
-        if (!validateInput(emailAddress, /^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Enter a valid Email")) {
+        if (!validateInput(emailAddress, /^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Enter a valid email")) {
           document.getElementById('qrSettings').style.display = 'none';
           return;
         }
@@ -1004,7 +1015,7 @@
       } else if (type === "viber") {
         var viberNumber = document.getElementById("viberNumber");
         if (viberNumber.value.trim() === "") {
-          missingFields.push("Viber Number");
+          missingFields.push("Viber Phone Number");
           viberNumber.style.border = "2px solid red";
           document.getElementById('qrSettings').style.display = 'none';
         } else {
@@ -1076,7 +1087,7 @@
       } else if (type === "signal") {
         var signalNumber = document.getElementById("signalNumber");
         if (signalNumber.value.trim() === "") {
-          missingFields.push("Signal Number");
+          missingFields.push("Signal Phone Number");
           signalNumber.style.border = "2px solid red";
           document.getElementById('qrSettings').style.display = 'none';
         } else {
@@ -1126,13 +1137,13 @@
           document.getElementById('qrSettings').style.display = 'block';
           applyFrameStyle(qrcodeDiv.querySelector('canvas'));
         } catch (err) {
-          showWarning("Generation Error", "An error occurred while generating the QR code. Please check the data.");
+          showWarning("Generation Error", "An error occurred while generating the QR code. Please check the input data.");
           document.getElementById('qrSettings').style.display = 'none';
         }
       }
     }
     
-    function showWarning(msg, details) {
+    function showShowWarning(msg, details) {
       lastWarningDetails = details || "";
       var warningDiv = document.getElementById("warningMessage");
       warningDiv.innerHTML = `<h3>${msg}${lastWarningDetails ? " <button id='warningInfoBtn' onclick='showWarningDetails()'>?</button>" : ""}</h3>`;
@@ -1189,7 +1200,7 @@
           break;
         case 'mapInput':
           header = "Map";
-          content = "Enter an address or coordinates (e.g., '123 Main St, City' or '55.7539,37.6208').";
+          content = "Enter an address or coordinates (e.g., 'Moscow, Red Square' or '55.7539,37.6208').";
           break;
         case 'whatsappPhone':
           header = "WhatsApp: Phone";
@@ -1241,67 +1252,67 @@
           break;
         case 'telegramUsername':
           header = "Telegram";
-          content = "Enter the Telegram username (without @) to link to the chat.";
+          content = "Enter the Telegram username (without @) for linking to a chat.";
           break;
         case 'facebookUsername':
           header = "Facebook";
-          content = "Enter the Facebook username or ID to link to the profile.";
+          content = "Enter the Facebook username or ID for linking to a profile.";
           break;
         case 'instagramUsername':
           header = "Instagram";
-          content = "Enter the Instagram username to link to the profile.";
+          content = "Enter the Instagram username for linking to a profile.";
           break;
         case 'linkedinUsername':
           header = "LinkedIn";
-          content = "Enter the LinkedIn username to link to the profile.";
+          content = "Enter the LinkedIn username for linking to a profile.";
           break;
         case 'youtubeChannel':
           header = "YouTube";
-          content = "Enter the YouTube ID or channel link.";
+          content = "Enter the YouTube channel ID or link.";
           break;
         case 'viberNumber':
           header = "Viber";
-          content = "Enter the Viber phone number in any format.";
+          content = "Enter the phone number for Viber in any format.";
           break;
         case 'pinterestUsername':
           header = "Pinterest";
-          content = "Enter the Pinterest username to link to the profile.";
+          content = "Enter the Pinterest username for linking to a profile.";
           break;
         case 'xUsername':
           header = "X";
-          content = "Enter the X username to link to the profile.";
+          content = "Enter the X username for linking to a profile.";
           break;
         case 'tiktokUsername':
           header = "TikTok";
-          content = "Enter the TikTok username (without @) to link to the profile.";
+          content = "Enter the TikTok username (without @) for linking to a profile.";
           break;
         case 'discordUsername':
           header = "Discord";
-          content = "Enter the Discord username or server ID to link.";
+          content = "Enter the Discord username or server ID for linking.";
           break;
         case 'snapchatUsername':
           header = "Snapchat";
-          content = "Enter the Snapchat username to add as a friend.";
+          content = "Enter the Snapchat username for adding as a friend.";
           break;
         case 'redditUsername':
           header = "Reddit";
-          content = "Enter the Reddit username to link to the profile.";
+          content = "Enter the Reddit username for linking to a profile.";
           break;
         case 'twitchUsername':
           header = "Twitch";
-          content = "Enter the Twitch username to link to the channel.";
+          content = "Enter the Twitch username for linking to a channel.";
           break;
         case 'signalNumber':
           header = "Signal";
-          content = "Enter the Signal phone number in any format.";
+          content = "Enter the phone number for Signal in any format.";
           break;
         case 'wechatUsername':
           header = "WeChat";
-          content = "Enter the WeChat ID to link to the profile.";
+          content = "Enter the WeChat ID for linking to a profile.";
           break;
         case 'lineUsername':
           header = "Line";
-          content = "Enter the Line ID to link to the profile.";
+          content = "Enter the Line ID for linking to a profile.";
           break;
       }
       document.getElementById("modalHeader").innerText = header;
@@ -1320,6 +1331,10 @@
       document.getElementById('backButton').style.display = 'none';
       clearWarning();
       document.getElementById('qrSettings').style.display = 'block';
+      // Move backToMain back to form-container top
+      const backToMain = document.getElementById('backToMain');
+      const formContainer = document.querySelector('.form-container');
+      formContainer.insertBefore(backToMain, formContainer.firstChild);
     }
     
     function formatPhoneNumber(value) {
@@ -1335,6 +1350,29 @@
       if (digits.length >= 11) formatted += ' ' + digits.substring(10,12);
       else if (digits.length > 10) formatted += ' ' + digits.substring(10);
       return formatted;
+    }
+
+    function hexToRgb(hex) {
+      hex = hex.replace('#', '');
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
+      return { r, g, b };
+    }
+
+    function isDark(color) {
+      const rgb = hexToRgb(color);
+      const luminance = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;
+      return luminance < 0.5;
+    }
+
+    function setSelectedBorder(opt) {
+      if (opt.classList.contains('selected')) {
+        const color = opt.dataset.color;
+        opt.style.border = isDark(color) ? '2px solid blue' : '2px solid #000';
+      } else {
+        opt.style.border = '2px solid transparent';
+      }
     }
     
     document.addEventListener("DOMContentLoaded", function() {
@@ -1363,53 +1401,45 @@
         }
       });
       
-      document.getElementById("colorPalette").addEventListener("click", function(e) {
-        if (e.target.classList.contains("color-option")) {
-          document.querySelectorAll("#colorPalette .color-option").forEach(opt => opt.classList.remove("selected"));
-          e.target.classList.add("selected");
-          if (qrCodeInstance) {
-            document.getElementById("qrcode").innerHTML = "";
-            const size = parseInt(document.getElementById("qrSize").value);
-            const color = e.target.dataset.color;
-            const bgColor = document.querySelector('#backgroundColorPalette .color-option.selected')?.dataset.color || "#ffffff";
-            qrCodeInstance = new QRCode(document.getElementById("qrcode"), {
-              text: qrCodeInstance._htOption.text,
-              width: size,
-              height: size,
-              colorDark: color,
-              colorLight: bgColor,
-              correctLevel: QRCode.CorrectLevel.H
+      function setupColorPalette(paletteId) {
+        document.getElementById(paletteId).addEventListener("click", function(e) {
+          if (e.target.classList.contains("color-option")) {
+            const options = document.querySelectorAll(`#${paletteId} .color-option`);
+            options.forEach(opt => {
+              opt.classList.remove("selected");
+              setSelectedBorder(opt);
             });
-            applyFrameStyle(document.querySelector('#qrcode canvas'));
+            e.target.classList.add("selected");
+            setSelectedBorder(e.target);
+            if (qrCodeInstance) {
+              document.getElementById("qrcode").innerHTML = "";
+              const size = parseInt(document.getElementById("qrSize").value);
+              const color = document.querySelector('#colorPalette .color-option.selected')?.dataset.color || "#000000";
+              const bgColor = document.querySelector('#backgroundColorPalette .color-option.selected')?.dataset.color || "#ffffff";
+              qrCodeInstance = new QRCode(document.getElementById("qrcode"), {
+                text: qrCodeInstance._htOption.text,
+                width: size,
+                height: size,
+                colorDark: color,
+                colorLight: bgColor,
+                correctLevel: QRCode.CorrectLevel.H
+              });
+              applyFrameStyle(document.querySelector('#qrcode canvas'));
+            }
           }
-        }
-      });
+        });
+      }
 
-      document.getElementById("backgroundColorPalette").addEventListener("click", function(e) {
-        if (e.target.classList.contains("color-option")) {
-          document.querySelectorAll("#backgroundColorPalette .color-option").forEach(opt => opt.classList.remove("selected"));
-          e.target.classList.add("selected");
-          if (qrCodeInstance) {
-            document.getElementById("qrcode").innerHTML = "";
-            const size = parseInt(document.getElementById("qrSize").value);
-            const color = document.querySelector('#colorPalette .color-option.selected')?.dataset.color || "#000000";
-            const bgColor = e.target.dataset.color;
-            qrCodeInstance = new QRCode(document.getElementById("qrcode"), {
-              text: qrCodeInstance._htOption.text,
-              width: size,
-              height: size,
-              colorDark: color,
-              colorLight: bgColor,
-              correctLevel: QRCode.CorrectLevel.H
-            });
-            applyFrameStyle(document.querySelector('#qrcode canvas'));
-          }
-        }
-      });
+      setupColorPalette("colorPalette");
+      setupColorPalette("backgroundColorPalette");
 
-      document.querySelector("#colorPalette .color-option[data-color='#000000']").classList.add("selected");
-      document.querySelector("#backgroundColorPalette .color-option[data-color='#ffffff']").classList.add("selected");
+      const defaultColor = document.querySelector("#colorPalette .color-option[data-color='#000000']");
+      defaultColor.classList.add("selected");
+      setSelectedBorder(defaultColor);
+
+      const defaultBgColor = document.querySelector("#backgroundColorPalette .color-option[data-color='#ffffff']");
+      defaultBgColor.classList.add("selected");
+      setSelectedBorder(defaultBgColor);
     });
   </script>
 </body>
-</html>

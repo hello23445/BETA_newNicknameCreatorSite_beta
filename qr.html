@@ -81,6 +81,19 @@
       .qr-settings {
         max-width: 100%;
       }
+      #backToMain {
+        position: static;
+        margin: 0 auto 10px;
+        display: block;
+      }
+    }
+
+    @media (min-width: 768px) {
+      #backToMain {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+      }
     }
 
     .qr-container {
@@ -289,21 +302,19 @@
     .color-option.selected {
       border: 2px solid #000;
     }
+
+    #backToMain {
+      padding: 10px 20px;
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
-<button 
-    onclick="window.location.href = 'main.html'" 
-    style="position: absolute; bottom: 10px; left: 10px; padding: 10px 20px; font-size: 16px;"
->
-    ВЕРНУТЬСЯ В ГЛАВНОЕ МЕНЮ
-</button>
-
-
   <div id="statusMessage"></div>
   
   <div class="container">
     <div class="form-container">
+      <button id="backToMain" onclick="window.location.href = 'main.html'">ВЕРНУТЬСЯ В ГЛАВНОЕ МЕНЮ</button>
       <select id="qrType" onchange="updateForm()">
         <option value="url">Ссылка</option>
         <option value="wifi">Сеть WiFi</option>
@@ -808,6 +819,9 @@
       document.getElementById("qrContainer").style.display = "flex";
       document.querySelector('.form-container').style.display = 'none';
       document.getElementById('backButton').style.display = 'block';
+      // Move backToMain to qrSettings top
+      const backToMain = document.getElementById('backToMain');
+      document.getElementById('qrSettings').insertBefore(backToMain, document.getElementById('qrSettings').firstChild);
       
       var type = document.getElementById("qrType").value;
       var qrText = "";
@@ -1318,6 +1332,10 @@
       document.getElementById('backButton').style.display = 'none';
       clearWarning();
       document.getElementById('qrSettings').style.display = 'block';
+      // Move backToMain back to form-container top
+      const backToMain = document.getElementById('backToMain');
+      const formContainer = document.querySelector('.form-container');
+      formContainer.insertBefore(backToMain, formContainer.firstChild);
     }
     
     function formatPhoneNumber(value) {
@@ -1333,6 +1351,29 @@
       if (digits.length >= 11) formatted += ' ' + digits.substring(10,12);
       else if (digits.length > 10) formatted += ' ' + digits.substring(10);
       return formatted;
+    }
+
+    function hexToRgb(hex) {
+      hex = hex.replace('#', '');
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
+      return { r, g, b };
+    }
+
+    function isDark(color) {
+      const rgb = hexToRgb(color);
+      const luminance = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;
+      return luminance < 0.5;
+    }
+
+    function setSelectedBorder(opt) {
+      if (opt.classList.contains('selected')) {
+        const color = opt.dataset.color;
+        opt.style.border = isDark(color) ? '2px solid blue' : '2px solid #000';
+      } else {
+        opt.style.border = '2px solid transparent';
+      }
     }
     
     document.addEventListener("DOMContentLoaded", function() {
@@ -1361,52 +1402,45 @@
         }
       });
       
-      document.getElementById("colorPalette").addEventListener("click", function(e) {
-        if (e.target.classList.contains("color-option")) {
-          document.querySelectorAll("#colorPalette .color-option").forEach(opt => opt.classList.remove("selected"));
-          e.target.classList.add("selected");
-          if (qrCodeInstance) {
-            document.getElementById("qrcode").innerHTML = "";
-            const size = parseInt(document.getElementById("qrSize").value);
-            const color = e.target.dataset.color;
-            const bgColor = document.querySelector('#backgroundColorPalette .color-option.selected')?.dataset.color || "#ffffff";
-            qrCodeInstance = new QRCode(document.getElementById("qrcode"), {
-              text: qrCodeInstance._htOption.text,
-              width: size,
-              height: size,
-              colorDark: color,
-              colorLight: bgColor,
-              correctLevel: QRCode.CorrectLevel.H
+      function setupColorPalette(paletteId) {
+        document.getElementById(paletteId).addEventListener("click", function(e) {
+          if (e.target.classList.contains("color-option")) {
+            const options = document.querySelectorAll(`#${paletteId} .color-option`);
+            options.forEach(opt => {
+              opt.classList.remove("selected");
+              setSelectedBorder(opt);
             });
-            applyFrameStyle(document.querySelector('#qrcode canvas'));
+            e.target.classList.add("selected");
+            setSelectedBorder(e.target);
+            if (qrCodeInstance) {
+              document.getElementById("qrcode").innerHTML = "";
+              const size = parseInt(document.getElementById("qrSize").value);
+              const color = document.querySelector('#colorPalette .color-option.selected')?.dataset.color || "#000000";
+              const bgColor = document.querySelector('#backgroundColorPalette .color-option.selected')?.dataset.color || "#ffffff";
+              qrCodeInstance = new QRCode(document.getElementById("qrcode"), {
+                text: qrCodeInstance._htOption.text,
+                width: size,
+                height: size,
+                colorDark: color,
+                colorLight: bgColor,
+                correctLevel: QRCode.CorrectLevel.H
+              });
+              applyFrameStyle(document.querySelector('#qrcode canvas'));
+            }
           }
-        }
-      });
+        });
+      }
 
-      document.getElementById("backgroundColorPalette").addEventListener("click", function(e) {
-        if (e.target.classList.contains("color-option")) {
-          document.querySelectorAll("#backgroundColorPalette .color-option").forEach(opt => opt.classList.remove("selected"));
-          e.target.classList.add("selected");
-          if (qrCodeInstance) {
-            document.getElementById("qrcode").innerHTML = "";
-            const size = parseInt(document.getElementById("qrSize").value);
-            const color = document.querySelector('#colorPalette .color-option.selected')?.dataset.color || "#000000";
-            const bgColor = e.target.dataset.color;
-            qrCodeInstance = new QRCode(document.getElementById("qrcode"), {
-              text: qrCodeInstance._htOption.text,
-              width: size,
-              height: size,
-              colorDark: color,
-              colorLight: bgColor,
-              correctLevel: QRCode.CorrectLevel.H
-            });
-            applyFrameStyle(document.querySelector('#qrcode canvas'));
-          }
-        }
-      });
+      setupColorPalette("colorPalette");
+      setupColorPalette("backgroundColorPalette");
 
-      document.querySelector("#colorPalette .color-option[data-color='#000000']").classList.add("selected");
-      document.querySelector("#backgroundColorPalette .color-option[data-color='#ffffff']").classList.add("selected");
+      const defaultColor = document.querySelector("#colorPalette .color-option[data-color='#000000']");
+      defaultColor.classList.add("selected");
+      setSelectedBorder(defaultColor);
+
+      const defaultBgColor = document.querySelector("#backgroundColorPalette .color-option[data-color='#ffffff']");
+      defaultBgColor.classList.add("selected");
+      setSelectedBorder(defaultBgColor);
     });
   </script>
 </body>
