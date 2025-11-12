@@ -98,13 +98,13 @@
 </head>
 <body>
     <header>
-        <a href="main.html" class="button" id="backButton" style="background-color: rgb(187, 32, 32);">BACK TO MAIN MENU</a>
+        <a href="main.html" class="button" id="backButton" style="background-color: darkblue;">BACK TO MAIN MENU</a>
     </header>
 
     <div class="center-content">
         <div class="status-text" id="statusText">Loading...</div>
-        <a id="reloadBTN" class="button reload-button" href="index.html">Restart the application (helps most of the time)</a>
-        <a href="https://t.me/Clickerstart_bot" target="_blank" class="button support-button" id="supportButton">Contact Support</a>
+        <a id="reloadBTN" class="button reload-button" href="index.html" style="background-color: darkblue;">Restart the application (helps most of the time)</a>
+        <a href="https://t.me/Clickerstart_bot" target="_blank" class="button support-button" id="supportButton" style="background-color: darkblue;">Contact Support</a>
     </div>
 
 <script>
@@ -178,14 +178,14 @@
     }
 
     const nick_story = localStorage.getItem('nick_story');
-    if (!nick_story || isNaN(Number(nick_story)) || Number(nick_story) < 0) {
-        localStorage.setItem('nick_story', '0');
+    if (!nick_story && nick_story !== '') {
+        localStorage.setItem('nick_story', '');
         errors.push(lang === 'ru' ? 'Исправлено количество сохраненных никнеймов в историю.' : 'Saved nicknames in history count has been fixed.');
     }
 
     const desc_story = localStorage.getItem('desc_story');
-    if (!desc_story || isNaN(Number(desc_story)) || Number(desc_story) < 0) {
-        localStorage.setItem('desc_story', '0');
+    if (!desc_story && desc_story !== '') {
+        localStorage.setItem('desc_story', '');
         errors.push(lang === 'ru' ? 'Исправлено количество сохраненных описаний в историю.' : 'Saved descriptions in history count has been fixed.');
     }
 
