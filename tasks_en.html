@@ -464,7 +464,7 @@
 
     function getCoins() { return parseInt(localStorage.getItem('coins') || '0', 10); }
     function setCoins(n) { localStorage.setItem('coins', String(n)); renderCoins(); }
-    function renderCoins() { coinsDisplay.textContent = `${getCoins()}🪙`; }
+    function renderCoins() { coinsDisplay.textContent = `🪙${getCoins()}`; }
 
     function getStartDate() { return new Date(localStorage.getItem('rewardsStart')); }
     function dayIndexFromStart() {

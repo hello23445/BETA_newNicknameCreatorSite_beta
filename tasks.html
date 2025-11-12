@@ -115,7 +115,7 @@
     <header>
       <a class="back-btn" href="main.html">ВЕРНУТЬСЯ В ГЛАВНОЕ МЕНЮ</a>
       <div style="display:flex;gap:12px;align-items:center">
-        <div class="coins" id="coinsDisplay">0🪙</div>
+        <div class="coins" id="coinsDisplay">🪙0</div>
       </div>
     </header>
 
@@ -464,7 +464,7 @@
 
     function getCoins() { return parseInt(localStorage.getItem('coins') || '0', 10); }
     function setCoins(n) { localStorage.setItem('coins', String(n)); renderCoins(); }
-    function renderCoins() { coinsDisplay.textContent = `${getCoins()}🪙`; }
+    function renderCoins() { coinsDisplay.textContent = `🪙${getCoins()}`; }
 
     function getStartDate() { return new Date(localStorage.getItem('rewardsStart')); }
     function dayIndexFromStart() {
@@ -540,7 +540,7 @@
         const btn = document.createElement('button');
 
         if (claimed.includes(i)) {
-          btn.textContent = 'Забрано'; btn.disabled = true; btn.style.opacity = 0.6;
+          btn.textContent = 'Получено'; btn.disabled = true; btn.style.opacity = 0.6;
         } else if (i > todayIndex) {
           const future = new Date(getStartDate());
           future.setDate(future.getDate() + i);
@@ -585,7 +585,7 @@
         btn.className = 'btn';
 
         if (claimed) {
-          btn.textContent = 'Забрано'; btn.disabled = true; btn.style.opacity = 0.6;
+          btn.textContent = 'Выполнено'; btn.disabled = true; btn.style.opacity = 0.6;
         } else if (expired) {
           btn.textContent = 'Истёк'; btn.disabled = true; btn.style.opacity = 0.6;
         } else {
