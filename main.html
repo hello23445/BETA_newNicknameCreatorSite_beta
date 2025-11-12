@@ -383,7 +383,7 @@
                                 <div id="customUpload" style="display:none; margin-top:8px;">
                                     <button class="btn" id="uploadCustom" data-translate="uploadCustomBg"></button>
                                 </div>
-                                <div style="margin-top:8px; display:flex; align-items:center; gap:8px;">
+                                <div style="margin-top:8px; display:flex; align-items:center; gap:8px;" id="blurBackground_settingShow">
                                     <label class="label" data-translate="blurBackground" for="blurToggle"></label>
                                     <input type="checkbox" id="blurToggle" />
                                 </div>
@@ -432,6 +432,7 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
     <script>
+        
         if (!localStorage.getItem('userName')) {
             localStorage.setItem('userName', 'User');
         }
@@ -1248,12 +1249,15 @@
         function updateBlurDisabled() {
             const themeValue = document.getElementById('theme').value;
             const blurToggle = document.getElementById('blurToggle');
-            if (themeValue === 'theme1') {
+            if (themeValue === 'theme1' || themeValue === 'theme3') {
                 blurToggle.disabled = true;
+                document.getElementById('blurBackground_settingShow').style.display = 'none';
                 blurToggle.checked = false;
                 localStorage.setItem('blur', 'no');
             } else {
                 blurToggle.disabled = false;
+                document.getElementById('blurBackground_settingShow').style.display = 'block';
+
             }
         }
         function applyBlur() {
