@@ -3,7 +3,7 @@ export const texpereriv = '' //Уже, Скоро, ...
 localStorage.setItem('m', texpereriv);
 
 // список запрещённых слов (только уникальные формы, без дублей)
-const badWords = [
+export const badWords = [
   // русские
   'говно', 'хейт', 'порно', 'аноним',
   'admin', 'админ', 'moder', 'модер', 'модератор',

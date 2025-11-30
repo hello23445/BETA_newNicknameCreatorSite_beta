@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>App Status</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <style>
         /* Общие стили */
         * {
@@ -103,6 +104,37 @@
 
     <div class="center-content">
         <div class="status-text" id="statusText">Loading...</div>
+        <div style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.8rem;
+        margin-block: 1.5rem;
+        ">
+        <i class="fa-regular fa-window-minimize fa-2xl"
+            style="transform: rotate(180deg) scaleX(1.5);
+                    color: #908686;"></i>
+
+        <h4 id="or" style="
+            color: #908686;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-align: center;
+            text-transform: uppercase;
+            margin: -45%;
+        ">
+            или
+        </h4>
+
+        <i class="fa-regular fa-window-minimize fa-2xl"
+            style="transform: scaleX(1.5);
+                    color: #908686;"></i>
+        </div>
+
+
+
+        </center>
         <a id="reloadBTN" class="button reload-button" href="index.html" style="background-color: darkblue;">Restart the application (helps most of the time)</a>
         <a href="https://t.me/Clickerstart_bot" target="_blank" class="button support-button" id="supportButton" style="background-color: darkblue;">Contact Support</a>
     </div>
@@ -141,18 +173,21 @@
             back: 'ВЕРНУТЬСЯ В ГЛАВНОЕ МЕНЮ',
             support: 'Написать в службу поддержки',
             ok: 'Все работает корректно✅',
-            errorsPrefix: 'Найдено и устранено следующих ошибок:'
+            errorsPrefix: 'Найдено и устранено следующих ошибок:',
+            or: 'ИЛИ'
         },
         en: {
             reloadBTN: 'Restart the application (helps most of the time)',
             back: 'BACK TO MAIN MENU',
             support: 'Contact Support',
             ok: 'Everything works correctly✅',
-            errorsPrefix: 'Found and fixed the following errors:'
+            errorsPrefix: 'Found and fixed the following errors:',
+            or: 'OR'
         }
     };
 
     // Обновляем кнопки и заголовки заранее
+    or.textContent = texts[lang].or;
     backButton.textContent = texts[lang].back;
     supportButton.textContent = texts[lang].support;
     reloadBTN.textContent = texts[lang].reloadBTN;
@@ -178,16 +213,37 @@
     }
 
     const nick_story = localStorage.getItem('nick_story');
-    if (!nick_story && nick_story !== '') {
-        localStorage.setItem('nick_story', '');
-        errors.push(lang === 'ru' ? 'Исправлено количество сохраненных никнеймов в историю.' : 'Saved nicknames in history count has been fixed.');
+    if (nick_story === null || typeof nick_story !== 'string' || nick_story.includes('NaN')) {
+        let nick_story = localStorage.getItem('nick_story');
+        if (typeof nick_story === 'string') {
+            nick_story = nick_story.replace(/NaN/g, '');
+            localStorage.setItem('nick_story', nick_story);
+        }
+        else{
+            localStorage.setItem('nick_story', '');
+        }
+        errors.push(lang === 'ru'
+            ? 'Исправлено количество сохранённых никнеймов в истории.'
+            : 'Saved nicknames in history count has been fixed.');
     }
 
     const desc_story = localStorage.getItem('desc_story');
-    if (!desc_story && desc_story !== '') {
-        localStorage.setItem('desc_story', '');
-        errors.push(lang === 'ru' ? 'Исправлено количество сохраненных описаний в историю.' : 'Saved descriptions in history count has been fixed.');
+    if (desc_story === null || typeof desc_story !== 'string' || desc_story.includes('NaN')) {
+        let desc_story = localStorage.getItem('desc_story');
+
+        if (typeof desc_story === 'string') {
+            desc_story = desc_story.replace(/NaN/g, '');
+            localStorage.setItem('desc_story', desc_story);
+        } else {
+            localStorage.setItem('desc_story', '');
+        }
+
+
+        errors.push(lang === 'ru'
+            ? 'Исправлено количество сохранённых описаний в историю созданных описаний.'
+            : 'Saved descriptions in history count has been fixed.');
     }
+
 
     // Проверяем ошибки и отображаем
     if (errors.length > 0) {
